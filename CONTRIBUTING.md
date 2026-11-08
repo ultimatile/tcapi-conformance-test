@@ -11,6 +11,23 @@ This repository's deliverable is the test suite, so the type is judged against t
 
 `test` is not used: every change here touches tests, so the type would tell a reader nothing.
 
+## Formatting
+
+C and C++ files are formatted by clang-format in LLVM style (`.clang-format`).
+[pre-commit](https://pre-commit.com/) runs it on every commit once the hook is installed:
+
+```sh
+pre-commit install
+```
+
+To format every file at once:
+
+```sh
+pre-commit run --all-files
+```
+
+The hook's clang-format version is pinned by `rev` in `.pre-commit-config.yaml`.
+
 ## Local integration check with the cytnx backend
 
 `make integration-check` verifies the current tcapict HEAD against the [cytnx

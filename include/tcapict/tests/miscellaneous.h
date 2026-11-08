@@ -30,10 +30,13 @@ template <typename T> struct type_tag {
 };
 
 template <typename T> struct is_std_tuple : std::false_type {};
-template <typename... Ts> struct is_std_tuple<std::tuple<Ts...>> : std::true_type {};
-template <typename T> inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
+template <typename... Ts>
+struct is_std_tuple<std::tuple<Ts...>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_std_tuple_v = is_std_tuple<T>::value;
 
-template <typename T, typename Tuple> struct tuple_contains : std::false_type {};
+template <typename T, typename Tuple>
+struct tuple_contains : std::false_type {};
 template <typename T, typename... Ts>
 struct tuple_contains<T, std::tuple<Ts...>>
     : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
@@ -119,7 +122,8 @@ void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
     const auto w = written<TenT>(1.5);
     auto imag_off = tcapi::zeros<TenT>(ctx, {});
     TCAPICT_ASSERT(tcapi::shape(ctx, imag_off).empty());
-    tcapi::set_elem(ctx, imag_off, {}, make_elem<TenT>(w.real(), w.imag() + 0.25));
+    tcapi::set_elem(ctx, imag_off, {},
+                    make_elem<TenT>(w.real(), w.imag() + 0.25));
     TCAPICT_ASSERT(!tcapi::close(ctx, a, imag_off, eps));
   }
 
@@ -473,7 +477,8 @@ void test_convert_real_to_complex(tcapi_test_fixture<RealTenT> &fix) {
 // CONTRIBUTING.md describes.
 template <typename TenT>
 void test_convert_precision(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_CONVERT) && !defined(TCAPICT_SKIP_SUPPORTED_TEN_TYPES) &&           \
+#if !defined(TCAPICT_SKIP_CONVERT) &&                                          \
+    !defined(TCAPICT_SKIP_SUPPORTED_TEN_TYPES) &&                              \
     defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
   const tcapi::shape_t<TenT> shape = {2, 3};
@@ -486,7 +491,8 @@ void test_convert_precision(tcapi_test_fixture<TenT> &fix) {
     if constexpr (std::is_same_v<tcapi::context_handle_t<DestTenT>,
                                  tcapi::context_handle_t<TenT>> &&
                   is_complex_v<DestTenT> == is_complex_v<TenT> &&
-                  !std::is_same_v<tcapi::real_t<DestTenT>, tcapi::real_t<TenT>>) {
+                  !std::is_same_v<tcapi::real_t<DestTenT>,
+                                  tcapi::real_t<TenT>>) {
       // b, declared after fix2, is released first.
       tcapi_test_fixture<DestTenT> fix2;
       DestTenT b;
@@ -563,31 +569,31 @@ template <typename TenT> void test_version(tcapi_test_fixture<TenT> &fix) {
 
 // Bulk registration helper: invokes X(..., "category", test_fn) once per test.
 // See include/tcapict/adapters/doctest.h for usage.
-#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_ALL_TYPES(X, ...) \
-  X(__VA_ARGS__, "miscellaneous", test_close_identical) \
-  X(__VA_ARGS__, "miscellaneous", test_close_different) \
-  X(__VA_ARGS__, "miscellaneous", test_close_zeroth_order) \
-  X(__VA_ARGS__, "miscellaneous", test_close_maximum_norm) \
-  X(__VA_ARGS__, "miscellaneous", test_close_boundary_inclusive) \
-  X(__VA_ARGS__, "miscellaneous", test_close_shape_mismatch_same_size) \
-  X(__VA_ARGS__, "miscellaneous", test_to_range) \
-  X(__VA_ARGS__, "miscellaneous", test_to_range_zeroth_order) \
-  X(__VA_ARGS__, "miscellaneous", test_show) \
-  X(__VA_ARGS__, "miscellaneous", test_show_zeroth_order) \
-  X(__VA_ARGS__, "miscellaneous", test_convert_same_context) \
-  X(__VA_ARGS__, "miscellaneous", test_convert_different_context) \
-  X(__VA_ARGS__, "miscellaneous", test_convert_data_integrity) \
-  X(__VA_ARGS__, "miscellaneous", test_convert_zeroth_order) \
-  X(__VA_ARGS__, "miscellaneous", test_convert_precision) \
-  X(__VA_ARGS__, "miscellaneous", test_supported_ten_types) \
+#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_ALL_TYPES(X, ...)                   \
+  X(__VA_ARGS__, "miscellaneous", test_close_identical)                        \
+  X(__VA_ARGS__, "miscellaneous", test_close_different)                        \
+  X(__VA_ARGS__, "miscellaneous", test_close_zeroth_order)                     \
+  X(__VA_ARGS__, "miscellaneous", test_close_maximum_norm)                     \
+  X(__VA_ARGS__, "miscellaneous", test_close_boundary_inclusive)               \
+  X(__VA_ARGS__, "miscellaneous", test_close_shape_mismatch_same_size)         \
+  X(__VA_ARGS__, "miscellaneous", test_to_range)                               \
+  X(__VA_ARGS__, "miscellaneous", test_to_range_zeroth_order)                  \
+  X(__VA_ARGS__, "miscellaneous", test_show)                                   \
+  X(__VA_ARGS__, "miscellaneous", test_show_zeroth_order)                      \
+  X(__VA_ARGS__, "miscellaneous", test_convert_same_context)                   \
+  X(__VA_ARGS__, "miscellaneous", test_convert_different_context)              \
+  X(__VA_ARGS__, "miscellaneous", test_convert_data_integrity)                 \
+  X(__VA_ARGS__, "miscellaneous", test_convert_zeroth_order)                   \
+  X(__VA_ARGS__, "miscellaneous", test_convert_precision)                      \
+  X(__VA_ARGS__, "miscellaneous", test_supported_ten_types)                    \
   X(__VA_ARGS__, "miscellaneous", test_version)
 
 // REAL_ONLY: the test lifts a real tensor to complex and checks the zero
 //   imaginary parts it gains, so it takes only a real TenT.
-#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_REAL_ONLY(X, ...) \
+#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_REAL_ONLY(X, ...)                   \
   X(__VA_ARGS__, "miscellaneous", test_convert_real_to_complex)
 
 // CPLX_ONLY: body is wrapped in `if constexpr (is_complex_v<TenT>)`; running
 //   for real TenT would be a no-op, so skip registration.
-#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_CPLX_ONLY(X, ...) \
+#define TCAPICT_FOREACH_MISCELLANEOUS_TEST_CPLX_ONLY(X, ...)                   \
   X(__VA_ARGS__, "miscellaneous", test_close_complex_modulus)

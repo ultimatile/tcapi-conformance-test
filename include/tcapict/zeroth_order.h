@@ -21,10 +21,9 @@ namespace detail {
 // the backend's access inside a one-element range; the wrappers below fail on
 // `malformed` and on a count other than 1. See "Callbacks the backend invokes"
 // in CONTRIBUTING.md.
-template <typename TenT>
-auto map_0d(bool &malformed, std::size_t &calls) {
-  return [&malformed, &calls](
-             const tcapi::elem_coors_t<TenT> &coors) -> std::ptrdiff_t {
+template <typename TenT> auto map_0d(bool &malformed, std::size_t &calls) {
+  return [&malformed,
+          &calls](const tcapi::elem_coors_t<TenT> &coors) -> std::ptrdiff_t {
     ++calls;
     if (!coors.empty()) {
       malformed = true;
@@ -100,8 +99,8 @@ void assign_from_range_0d(tcapi::context_handle_t<TenT> &ctx, RandomIt first,
   bool malformed = false;
   std::size_t calls = 0;
   TCAPICT_ASSERT_NOTHROW(out = tcapi::template assign_from_range<TenT>(
-                           ctx, tcapi::shape_t<TenT>{}, first,
-                           detail::map_0d<TenT>(malformed, calls)));
+                             ctx, tcapi::shape_t<TenT>{}, first,
+                             detail::map_0d<TenT>(malformed, calls)));
   TCAPICT_ASSERT_MSG(!malformed, "assign_from_range_0d: the backend passed a "
                                  "non-empty coordinate for shape {}");
   TCAPICT_ASSERT_MSG(calls == 1, "assign_from_range_0d: the backend did not "
@@ -122,13 +121,15 @@ void assign_from_range_0d(tcapi::context_handle_t<TenT> &ctx, RandomIt first,
 /// which passes the caller's location.
 template <typename TenT>
 void set_zeroth_order_at(const char *file, int line,
-                         tcapi_test_fixture<TenT> &fix, TenT &tensor, double v) {
+                         tcapi_test_fixture<TenT> &fix, TenT &tensor,
+                         double v) {
   auto &ctx = fix.context();
-  const auto shape =
-      detail::nothrow_call(file, line, [&] { return tcapi::shape(ctx, tensor); });
+  const auto shape = detail::nothrow_call(
+      file, line, [&] { return tcapi::shape(ctx, tensor); });
   if (!shape.empty()) {
     std::ostringstream oss;
-    oss << "a tensor expected to be zeroth-order has " << shape.size() << " bonds";
+    oss << "a tensor expected to be zeroth-order has " << shape.size()
+        << " bonds";
     detail::fail_at(file, line, oss.str());
   }
   const auto elem = written_elem<TenT>(v);
@@ -147,22 +148,22 @@ void set_zeroth_order_at(const char *file, int line,
 template <typename Ctx, typename Ten>
 void expect_zeroth_order_shape_at(const char *file, int line, Ctx &ctx,
                                   const Ten &tensor) {
-  const auto order =
-      detail::nothrow_call(file, line, [&] { return tcapi::order(ctx, tensor); });
+  const auto order = detail::nothrow_call(
+      file, line, [&] { return tcapi::order(ctx, tensor); });
   if (order != 0) {
     std::ostringstream oss;
     oss << "order " << order << " != expected 0";
     detail::fail_at(file, line, oss.str());
   }
-  const auto shape =
-      detail::nothrow_call(file, line, [&] { return tcapi::shape(ctx, tensor); });
+  const auto shape = detail::nothrow_call(
+      file, line, [&] { return tcapi::shape(ctx, tensor); });
   if (!shape.empty()) {
     std::ostringstream oss;
     oss << "shape of " << shape.size() << " bonds != expected {}";
     detail::fail_at(file, line, oss.str());
   }
-  const auto size =
-      detail::nothrow_call(file, line, [&] { return tcapi::size(ctx, tensor); });
+  const auto size = detail::nothrow_call(
+      file, line, [&] { return tcapi::size(ctx, tensor); });
   if (size != 1) {
     std::ostringstream oss;
     oss << "size " << size << " != expected 1";
@@ -192,8 +193,8 @@ void expect_zeroth_order_at(const char *file, int line,
 } // namespace tcapict
 
 /// expect_zeroth_order_at with the caller's file and line:
-/// TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, value[, cat[, n]]), the line chosen as for
-/// TCAPICT_EXPECT_ELEMS.
+/// TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, value[, cat[, n]]), the line chosen
+/// as for TCAPICT_EXPECT_ELEMS.
 #define TCAPICT_EXPECT_ZEROTH_ORDER(...)                                       \
   ::tcapict::expect_zeroth_order_at(__FILE__, __LINE__, __VA_ARGS__)
 

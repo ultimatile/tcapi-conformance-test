@@ -16,22 +16,22 @@
 #include <tcapict/tests/tensor_manipulation.h>
 
 // All tests that are safe for both real and complex TenT.
-#define TCAPICT_FOREACH_TEST_ALL_TYPES(X, ...) \
-  TCAPICT_FOREACH_CONSTRUCTION_TEST_ALL_TYPES(X, __VA_ARGS__) \
-  TCAPICT_FOREACH_IO_OPERATIONS_TEST_ALL_TYPES(X, __VA_ARGS__) \
-  TCAPICT_FOREACH_LINEAR_ALGEBRA_TEST_ALL_TYPES(X, __VA_ARGS__) \
-  TCAPICT_FOREACH_MISCELLANEOUS_TEST_ALL_TYPES(X, __VA_ARGS__) \
-  TCAPICT_FOREACH_READ_ONLY_GETTERS_TEST_ALL_TYPES(X, __VA_ARGS__) \
+#define TCAPICT_FOREACH_TEST_ALL_TYPES(X, ...)                                 \
+  TCAPICT_FOREACH_CONSTRUCTION_TEST_ALL_TYPES(X, __VA_ARGS__)                  \
+  TCAPICT_FOREACH_IO_OPERATIONS_TEST_ALL_TYPES(X, __VA_ARGS__)                 \
+  TCAPICT_FOREACH_LINEAR_ALGEBRA_TEST_ALL_TYPES(X, __VA_ARGS__)                \
+  TCAPICT_FOREACH_MISCELLANEOUS_TEST_ALL_TYPES(X, __VA_ARGS__)                 \
+  TCAPICT_FOREACH_READ_ONLY_GETTERS_TEST_ALL_TYPES(X, __VA_ARGS__)             \
   TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_ALL_TYPES(X, __VA_ARGS__)
 
 // Tests that lift a real tensor to complex and check the zero imaginary parts
 // it gains, so they take only a real TenT.
-#define TCAPICT_FOREACH_TEST_REAL_ONLY(X, ...) \
-  TCAPICT_FOREACH_MISCELLANEOUS_TEST_REAL_ONLY(X, __VA_ARGS__) \
+#define TCAPICT_FOREACH_TEST_REAL_ONLY(X, ...)                                 \
+  TCAPICT_FOREACH_MISCELLANEOUS_TEST_REAL_ONLY(X, __VA_ARGS__)                 \
   TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_REAL_ONLY(X, __VA_ARGS__)
 
 // Tests whose body is guarded `if constexpr (is_complex_v<TenT>)`; registering
 // for real TenT would produce redundant no-op test cases.
-#define TCAPICT_FOREACH_TEST_CPLX_ONLY(X, ...) \
-  TCAPICT_FOREACH_MISCELLANEOUS_TEST_CPLX_ONLY(X, __VA_ARGS__) \
+#define TCAPICT_FOREACH_TEST_CPLX_ONLY(X, ...)                                 \
+  TCAPICT_FOREACH_MISCELLANEOUS_TEST_CPLX_ONLY(X, __VA_ARGS__)                 \
   TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_CPLX_ONLY(X, __VA_ARGS__)

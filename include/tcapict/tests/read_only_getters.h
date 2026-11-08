@@ -8,14 +8,14 @@
 
 #include <cmath>
 
-namespace tcapict { namespace tests {
+namespace tcapict {
+namespace tests {
 
 // --- order ---
 
-template <typename TenT>
-void test_order(tcapi_test_fixture<TenT>& fix) {
+template <typename TenT> void test_order(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_ORDER
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 3, 4});
   TCAPICT_ASSERT(tcapi::order(ctx, tensor) == 3);
 #else
@@ -25,10 +25,9 @@ void test_order(tcapi_test_fixture<TenT>& fix) {
 
 // --- shape ---
 
-template <typename TenT>
-void test_shape(tcapi_test_fixture<TenT>& fix) {
+template <typename TenT> void test_shape(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SHAPE
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 3, 4});
   auto result_shape = tcapi::shape(ctx, tensor);
   TCAPICT_ASSERT(result_shape.size() == 3);
@@ -42,10 +41,9 @@ void test_shape(tcapi_test_fixture<TenT>& fix) {
 
 // --- size ---
 
-template <typename TenT>
-void test_size(tcapi_test_fixture<TenT>& fix) {
+template <typename TenT> void test_size(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SIZE
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 3, 4});
   TCAPICT_ASSERT(tcapi::size(ctx, tensor) == 24);
 #else
@@ -55,10 +53,9 @@ void test_size(tcapi_test_fixture<TenT>& fix) {
 
 // --- size_bytes ---
 
-template <typename TenT>
-void test_size_bytes(tcapi_test_fixture<TenT>& fix) {
+template <typename TenT> void test_size_bytes(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SIZE_BYTES
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 3, 4});
   // TCAPI V1's entry for it is "Return the physical memory footprint of `a` in
   // bytes. A compactly stored diagonal tensor may use fewer bytes than a dense
@@ -77,10 +74,9 @@ void test_size_bytes(tcapi_test_fixture<TenT>& fix) {
 
 // --- get_elem / set_elem ---
 
-template <typename TenT>
-void test_set_get_elem(tcapi_test_fixture<TenT>& fix) {
+template <typename TenT> void test_set_get_elem(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_GET_ELEM) && !defined(TCAPICT_SKIP_SET_ELEM)
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto eps = fix.epsilon();
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 2});
 
@@ -89,9 +85,11 @@ void test_set_get_elem(tcapi_test_fixture<TenT>& fix) {
   tcapi::set_elem(ctx, tensor, coord, expected);
 
   auto retrieved = tcapi::get_elem(ctx, tensor, coord);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(retrieved), real_part<TenT>(expected), eps);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(retrieved), real_part<TenT>(expected),
+                       eps);
   if constexpr (is_complex_v<TenT>) {
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(retrieved), imag_part<TenT>(expected), eps);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(retrieved), imag_part<TenT>(expected),
+                         eps);
   }
 #else
   (void)fix;
@@ -104,10 +102,10 @@ void test_set_get_elem(tcapi_test_fixture<TenT>& fix) {
 // coordinate sequence, and the function returns the sole element." Of
 // set_elem, the same sentence ends "the function updates the sole element".
 template <typename TenT>
-void test_set_get_elem_zeroth_order(tcapi_test_fixture<TenT>& fix) {
-#if !defined(TCAPICT_SKIP_GET_ELEM) && !defined(TCAPICT_SKIP_SET_ELEM) && \
+void test_set_get_elem_zeroth_order(tcapi_test_fixture<TenT> &fix) {
+#if !defined(TCAPICT_SKIP_GET_ELEM) && !defined(TCAPICT_SKIP_SET_ELEM) &&      \
     defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {});
   // set_elem and get_elem are the APIs under test, so the input is checked to
   // be zeroth-order before either is called on it.
@@ -125,9 +123,9 @@ void test_set_get_elem_zeroth_order(tcapi_test_fixture<TenT>& fix) {
 // --- size_bytes for small tensor ---
 
 template <typename TenT>
-void test_size_bytes_2x2(tcapi_test_fixture<TenT>& fix) {
+void test_size_bytes_2x2(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SIZE_BYTES
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   // The second-order one of the three; see the third-order test above for what
   // TCAPI V1 leaves assertable.
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 2});
@@ -140,9 +138,9 @@ void test_size_bytes_2x2(tcapi_test_fixture<TenT>& fix) {
 // --- size_bytes: zeroth-order ---
 
 template <typename TenT>
-void test_size_bytes_zeroth_order(tcapi_test_fixture<TenT>& fix) {
+void test_size_bytes_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SIZE_BYTES
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   // As for the third-order test above, the call returning is all TCAPI V1
   // leaves assertable; this adds the zeroth order to the ranks it is made on.
   // The shape check keeps the test from passing on a tensor that is not one.
@@ -154,16 +152,17 @@ void test_size_bytes_zeroth_order(tcapi_test_fixture<TenT>& fix) {
 #endif
 }
 
-}}  // namespace tcapict::tests
+} // namespace tests
+} // namespace tcapict
 
 // Bulk registration helper: invokes X(..., "category", test_fn) once per test.
 // See include/tcapict/adapters/doctest.h for usage.
-#define TCAPICT_FOREACH_READ_ONLY_GETTERS_TEST_ALL_TYPES(X, ...) \
-  X(__VA_ARGS__, "read_only_getters", test_order) \
-  X(__VA_ARGS__, "read_only_getters", test_shape) \
-  X(__VA_ARGS__, "read_only_getters", test_size) \
-  X(__VA_ARGS__, "read_only_getters", test_size_bytes) \
-  X(__VA_ARGS__, "read_only_getters", test_set_get_elem) \
-  X(__VA_ARGS__, "read_only_getters", test_set_get_elem_zeroth_order) \
-  X(__VA_ARGS__, "read_only_getters", test_size_bytes_2x2) \
+#define TCAPICT_FOREACH_READ_ONLY_GETTERS_TEST_ALL_TYPES(X, ...)               \
+  X(__VA_ARGS__, "read_only_getters", test_order)                              \
+  X(__VA_ARGS__, "read_only_getters", test_shape)                              \
+  X(__VA_ARGS__, "read_only_getters", test_size)                               \
+  X(__VA_ARGS__, "read_only_getters", test_size_bytes)                         \
+  X(__VA_ARGS__, "read_only_getters", test_set_get_elem)                       \
+  X(__VA_ARGS__, "read_only_getters", test_set_get_elem_zeroth_order)          \
+  X(__VA_ARGS__, "read_only_getters", test_size_bytes_2x2)                     \
   X(__VA_ARGS__, "read_only_getters", test_size_bytes_zeroth_order)

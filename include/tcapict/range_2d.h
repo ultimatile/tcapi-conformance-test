@@ -21,11 +21,11 @@ namespace detail {
 // since the wrappers below fail on `malformed`.
 template <typename TenT>
 auto map_2d(std::ptrdiff_t rows, std::ptrdiff_t cols, layout_2d layout,
-            bool& malformed) {
+            bool &malformed) {
   const std::ptrdiff_t row_stride = layout == layout_2d::row_major ? cols : 1;
   const std::ptrdiff_t col_stride = layout == layout_2d::row_major ? 1 : rows;
   return [rows, cols, row_stride, col_stride, &malformed](
-             const tcapi::elem_coors_t<TenT>& coors) -> std::ptrdiff_t {
+             const tcapi::elem_coors_t<TenT> &coors) -> std::ptrdiff_t {
     std::ptrdiff_t row = 0;
     std::ptrdiff_t col = 0;
     if (!coors_2d(coors, rows, cols, row, col)) {
@@ -36,7 +36,7 @@ auto map_2d(std::ptrdiff_t rows, std::ptrdiff_t cols, layout_2d layout,
   };
 }
 
-}  // namespace detail
+} // namespace detail
 
 // Each wrapper is guarded by the skip macro of the API it wraps, and every test
 // that calls it is guarded by that macro too. Skipping those tests therefore
@@ -49,8 +49,8 @@ auto map_2d(std::ptrdiff_t rows, std::ptrdiff_t cols, layout_2d layout,
 /// throws no std::exception and that the backend passed only valid
 /// coordinates, so a test cannot leave the coordinate check unasserted.
 template <typename TenT, typename RandomIt>
-void to_range_2d(tcapi::context_handle_t<TenT>& ctx, const TenT& a,
-                 const tcapi::shape_t<TenT>& shape, RandomIt first,
+void to_range_2d(tcapi::context_handle_t<TenT> &ctx, const TenT &a,
+                 const tcapi::shape_t<TenT> &shape, RandomIt first,
                  layout_2d layout) {
   TCAPICT_ASSERT(shape.size() == 2);
   TCAPICT_ASSERT(tcapi::shape(ctx, a) == shape);
@@ -73,9 +73,9 @@ void to_range_2d(tcapi::context_handle_t<TenT>& ctx, const TenT& a,
 /// output parameter so that this wrapper asks no more of TenT than a test
 /// calling assign_from_range directly does: assignment from its result.
 template <typename TenT, typename RandomIt>
-void assign_from_range_2d(tcapi::context_handle_t<TenT>& ctx,
-                          const tcapi::shape_t<TenT>& shape, RandomIt first,
-                          layout_2d layout, TenT& out) {
+void assign_from_range_2d(tcapi::context_handle_t<TenT> &ctx,
+                          const tcapi::shape_t<TenT> &shape, RandomIt first,
+                          layout_2d layout, TenT &out) {
   TCAPICT_ASSERT(shape.size() == 2);
   bool malformed = false;
   TCAPICT_ASSERT_NOTHROW(
@@ -91,4 +91,4 @@ void assign_from_range_2d(tcapi::context_handle_t<TenT>& ctx,
 }
 #endif
 
-}  // namespace tcapict
+} // namespace tcapict

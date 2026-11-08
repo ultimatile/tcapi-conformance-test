@@ -53,10 +53,9 @@ inline removes_on_exit scratch_ten_file(const char *stem) {
       std::to_string(
           std::chrono::steady_clock::now().time_since_epoch().count()) +
       "_" + std::to_string(counter++);
-  return removes_on_exit(
-      (std::filesystem::temp_directory_path() /
-       (std::string("tcapict_") + stem + "_" + tag + ".ten"))
-          .string());
+  return removes_on_exit((std::filesystem::temp_directory_path() /
+                          (std::string("tcapict_") + stem + "_" + tag + ".ten"))
+                             .string());
 }
 
 } // namespace detail
@@ -66,9 +65,9 @@ namespace tests {
 // --- save/load roundtrip ---
 
 template <typename TenT>
-void test_save_load_roundtrip(tcapi_test_fixture<TenT>& fix) {
+void test_save_load_roundtrip(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD)
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto eps = fix.epsilon();
 
   auto tensor = tcapi::zeros<TenT>(ctx, {2, 2});
@@ -100,9 +99,9 @@ void test_save_load_roundtrip(tcapi_test_fixture<TenT>& fix) {
 // --- load verifies data integrity against original ---
 
 template <typename TenT>
-void test_load_data_integrity(tcapi_test_fixture<TenT>& fix) {
+void test_load_data_integrity(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD)
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto eps = fix.epsilon();
 
   auto original = tcapi::eye<TenT>(ctx, 2);
@@ -125,10 +124,10 @@ void test_load_data_integrity(tcapi_test_fixture<TenT>& fix) {
 // --- save/load roundtrip: zeroth-order ---
 
 template <typename TenT>
-void test_save_load_zeroth_order(tcapi_test_fixture<TenT>& fix) {
-#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) && \
+void test_save_load_zeroth_order(tcapi_test_fixture<TenT> &fix) {
+#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) &&              \
     defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
-  auto& ctx = fix.context();
+  auto &ctx = fix.context();
   auto tensor = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, tensor, -6.5);
 
@@ -155,7 +154,7 @@ void test_save_load_zeroth_order(tcapi_test_fixture<TenT>& fix) {
 // file exists at the path the storage names and that every element loads
 // back.
 
-#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) && \
+#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) &&              \
     defined(TCAPICT_HAS_ELEM_SWEEP)
 namespace io_check {
 
@@ -184,7 +183,7 @@ void expect_round_trip(tcapi_test_fixture<TenT> &fix, const char *stem,
 
 template <typename TenT>
 void test_save_load_string_view(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) && \
+#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) &&              \
     defined(TCAPICT_HAS_ELEM_SWEEP)
   // Each view ends before its buffer does. A backend reading the save view as
   // a null-terminated string through `data()` writes another file, so the
@@ -201,8 +200,8 @@ void test_save_load_string_view(tcapi_test_fixture<TenT> &fix) {
       },
       [](auto &ctx, const std::string &path) {
         const std::string buffer = path + ".not_this_one";
-        return tcapi::load<TenT>(ctx,
-                                 std::string_view(buffer).substr(0, path.size()));
+        return tcapi::load<TenT>(
+            ctx, std::string_view(buffer).substr(0, path.size()));
       });
 #else
   (void)fix;
@@ -211,7 +210,7 @@ void test_save_load_string_view(tcapi_test_fixture<TenT> &fix) {
 
 template <typename TenT>
 void test_save_load_c_string(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) && \
+#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) &&              \
     defined(TCAPICT_HAS_ELEM_SWEEP)
   io_check::expect_round_trip(
       fix, "c_string",
@@ -230,7 +229,7 @@ void test_save_load_c_string(tcapi_test_fixture<TenT> &fix) {
 
 template <typename TenT>
 void test_save_load_string_rvalue(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) && \
+#if !defined(TCAPICT_SKIP_SAVE) && !defined(TCAPICT_SKIP_LOAD) &&              \
     defined(TCAPICT_HAS_ELEM_SWEEP)
   io_check::expect_round_trip(
       fix, "string_rvalue",
@@ -245,14 +244,15 @@ void test_save_load_string_rvalue(tcapi_test_fixture<TenT> &fix) {
 #endif
 }
 
-}}  // namespace tcapict::tests
+} // namespace tests
+} // namespace tcapict
 
 // Bulk registration helper: invokes X(..., "category", test_fn) once per test.
 // See include/tcapict/adapters/doctest.h for usage.
-#define TCAPICT_FOREACH_IO_OPERATIONS_TEST_ALL_TYPES(X, ...) \
-  X(__VA_ARGS__, "io_operations", test_save_load_roundtrip) \
-  X(__VA_ARGS__, "io_operations", test_load_data_integrity) \
-  X(__VA_ARGS__, "io_operations", test_save_load_zeroth_order) \
-  X(__VA_ARGS__, "io_operations", test_save_load_string_view) \
-  X(__VA_ARGS__, "io_operations", test_save_load_c_string) \
+#define TCAPICT_FOREACH_IO_OPERATIONS_TEST_ALL_TYPES(X, ...)                   \
+  X(__VA_ARGS__, "io_operations", test_save_load_roundtrip)                    \
+  X(__VA_ARGS__, "io_operations", test_load_data_integrity)                    \
+  X(__VA_ARGS__, "io_operations", test_save_load_zeroth_order)                 \
+  X(__VA_ARGS__, "io_operations", test_save_load_string_view)                  \
+  X(__VA_ARGS__, "io_operations", test_save_load_c_string)                     \
   X(__VA_ARGS__, "io_operations", test_save_load_string_rvalue)
