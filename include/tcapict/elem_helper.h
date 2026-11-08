@@ -1,15 +1,17 @@
 #pragma once
 
+#include <tcapi/tcapi.h>
+
 #include <complex>
 #include <cstddef>
-#include <tcapi/tcapi.h>
 #include <type_traits>
 
 namespace tcapict {
 
 /// Construct an element value from real and imaginary parts.
 /// For real tensor types, the imaginary part is ignored.
-/// Backends with non-standard element types (e.g. cuDoubleComplex) should specialize this.
+/// Backends with non-standard element types (e.g. cuDoubleComplex) should
+/// specialize this.
 template <typename TenT>
 tcapi::elem_t<TenT> make_elem(double real, double imag = 0.0) {
   using elem_type = tcapi::elem_t<TenT>;
