@@ -16,9 +16,8 @@ repos:
     hooks:
       - id: shellcheck
   # `--number` renumbers ordered lists, `--compact-tables` strips table-cell padding.
-  # `rev` pins only mdformat itself. The plugin and the libraries the hook's
-  # environment resolves are pinned here, so a fresh environment formats the
-  # same way as an existing one.
+  # `rev` pins only mdformat itself, and `pre-commit autoupdate` does not touch
+  # additional_dependencies, so bump the plugin's pin by hand.
   - repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
     hooks:
@@ -26,7 +25,3 @@ repos:
         args: [--number, --compact-tables]
         additional_dependencies:
           - mdformat-gfm==1.0.0
-          - mdit-py-plugins==0.6.1
-          - markdown-it-py==4.2.0
-          - mdurl==0.1.2
-          - wcwidth==0.9.4
