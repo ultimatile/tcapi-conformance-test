@@ -9,8 +9,7 @@
 namespace tcapict {
 
 /// Test fixture that manages a TCAPI context.
-/// Backends may specialize this for custom context creation (e.g. GPU) or
-/// epsilon.
+/// Backends may specialize this for custom context creation (e.g. GPU) or epsilon.
 template <typename TenT> struct tcapi_test_fixture {
   tcapi::context_handle_t<TenT> ctx;
 
@@ -50,11 +49,9 @@ enum class tol_category {
   exact,
   /// O(eps): single multiply / assignment (scale, set_elem / get_elem).
   elementwise,
-  /// O(sqrt(N) * eps): pairwise / Kahan summation (norm, trace,
-  /// linear_combine).
+  /// O(sqrt(N) * eps): pairwise / Kahan summation (norm, trace, linear_combine).
   reduction,
-  /// O(N * eps * cond): BLAS / LAPACK backward stability (QR, LQ, SVD, eig,
-  /// eigh).
+  /// O(N * eps * cond): BLAS / LAPACK backward stability (QR, LQ, SVD, eig, eigh).
   factorization,
   /// O(N^k * eps): algorithm-dependent composite (exp, inverse).
   iterative,

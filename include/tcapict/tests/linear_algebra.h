@@ -953,8 +953,7 @@ void test_trunc_svd_non_diagonal_input(tcapi_test_fixture<TenT> &fix) {
 #endif
 }
 
-// --- truncated SVD, overload (2): chi_max / s_min / chi_min / target_trunc_err
-// ---
+// --- truncated SVD, overload (2): chi_max / s_min / chi_min / target_trunc_err ---
 //
 // TCAPI V1's rule, with the truncation error for keeping chi values
 // epsilon(chi) = sum_{i>=chi} s_i^2 / sum_{i<kappa} s_i^2:

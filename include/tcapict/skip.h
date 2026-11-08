@@ -16,57 +16,55 @@
 // Available skip macros:
 //
 // Construction:
-//   TCAPICT_SKIP_ALLOCATE, TCAPICT_SKIP_ZEROS, TCAPICT_SKIP_FILL,
-//   TCAPICT_SKIP_EYE, TCAPICT_SKIP_RANDOM, TCAPICT_SKIP_ASSIGN_FROM_RANGE,
-//   TCAPICT_SKIP_COPY, TCAPICT_SKIP_MOVE, TCAPICT_SKIP_CLEAR
+//   TCAPICT_SKIP_ALLOCATE, TCAPICT_SKIP_ZEROS, TCAPICT_SKIP_FILL, TCAPICT_SKIP_EYE,
+//   TCAPICT_SKIP_RANDOM, TCAPICT_SKIP_ASSIGN_FROM_RANGE, TCAPICT_SKIP_COPY,
+//   TCAPICT_SKIP_MOVE, TCAPICT_SKIP_CLEAR
 //
 // Read-only getters:
-//   TCAPICT_SKIP_ORDER, TCAPICT_SKIP_SHAPE, TCAPICT_SKIP_SIZE,
-//   TCAPICT_SKIP_SIZE_BYTES, TCAPICT_SKIP_GET_ELEM
+//   TCAPICT_SKIP_ORDER, TCAPICT_SKIP_SHAPE, TCAPICT_SKIP_SIZE, TCAPICT_SKIP_SIZE_BYTES,
+//   TCAPICT_SKIP_GET_ELEM
 //
 // Tensor manipulation:
 //   TCAPICT_SKIP_SET_ELEM, TCAPICT_SKIP_RESHAPE, TCAPICT_SKIP_TRANSPOSE,
-//   TCAPICT_SKIP_CPLX_CONJ, TCAPICT_SKIP_TO_CPLX, TCAPICT_SKIP_REAL,
-//   TCAPICT_SKIP_IMAG, TCAPICT_SKIP_EXPAND, TCAPICT_SKIP_SHRINK,
-//   TCAPICT_SKIP_EXTRACT_SUB, TCAPICT_SKIP_REPLACE_SUB,
-//   TCAPICT_SKIP_CONCATENATE, TCAPICT_SKIP_STACK, TCAPICT_SKIP_FOR_EACH,
-//   TCAPICT_SKIP_FOR_EACH_WITH_COORS
+//   TCAPICT_SKIP_CPLX_CONJ, TCAPICT_SKIP_TO_CPLX, TCAPICT_SKIP_REAL, TCAPICT_SKIP_IMAG,
+//   TCAPICT_SKIP_EXPAND, TCAPICT_SKIP_SHRINK, TCAPICT_SKIP_EXTRACT_SUB,
+//   TCAPICT_SKIP_REPLACE_SUB, TCAPICT_SKIP_CONCATENATE, TCAPICT_SKIP_STACK,
+//   TCAPICT_SKIP_FOR_EACH, TCAPICT_SKIP_FOR_EACH_WITH_COORS
 //
 // Linear algebra:
-//   TCAPICT_SKIP_DIAG, TCAPICT_SKIP_NORM, TCAPICT_SKIP_NORMALIZE,
-//   TCAPICT_SKIP_SCALE, TCAPICT_SKIP_TRACE, TCAPICT_SKIP_EXP,
-//   TCAPICT_SKIP_INVERSE, TCAPICT_SKIP_CONTRACT, TCAPICT_SKIP_LINEAR_COMBINE,
-//   TCAPICT_SKIP_SVD, TCAPICT_SKIP_TRUNC_SVD, TCAPICT_SKIP_QR, TCAPICT_SKIP_LQ,
-//   TCAPICT_SKIP_EIGVALS, TCAPICT_SKIP_EIGVALSH, TCAPICT_SKIP_EIG,
-//   TCAPICT_SKIP_EIGH
+//   TCAPICT_SKIP_DIAG, TCAPICT_SKIP_NORM, TCAPICT_SKIP_NORMALIZE, TCAPICT_SKIP_SCALE,
+//   TCAPICT_SKIP_TRACE, TCAPICT_SKIP_EXP, TCAPICT_SKIP_INVERSE, TCAPICT_SKIP_CONTRACT,
+//   TCAPICT_SKIP_LINEAR_COMBINE, TCAPICT_SKIP_SVD, TCAPICT_SKIP_TRUNC_SVD,
+//   TCAPICT_SKIP_QR, TCAPICT_SKIP_LQ, TCAPICT_SKIP_EIGVALS, TCAPICT_SKIP_EIGVALSH,
+//   TCAPICT_SKIP_EIG, TCAPICT_SKIP_EIGH
 //
 // I/O:
 //   TCAPICT_SKIP_SAVE, TCAPICT_SKIP_LOAD
 //
 // Miscellaneous:
-//   TCAPICT_SKIP_TO_RANGE, TCAPICT_SKIP_SHOW, TCAPICT_SKIP_CLOSE,
-//   TCAPICT_SKIP_CONVERT, TCAPICT_SKIP_VERSION
+//   TCAPICT_SKIP_TO_RANGE, TCAPICT_SKIP_SHOW, TCAPICT_SKIP_CLOSE, TCAPICT_SKIP_CONVERT,
+//   TCAPICT_SKIP_VERSION
 //
 // Type system:
-//   TCAPICT_SKIP_SUPPORTED_TEN_TYPES, for a backend that does not yet provide
-//   the tcapi::supported_ten_types_t catalog. test_convert_precision, which
-//   takes its destination types from the catalog, is skipped with it.
+//   TCAPICT_SKIP_SUPPORTED_TEN_TYPES, for a backend that does not yet provide the
+//   tcapi::supported_ten_types_t catalog. test_convert_precision, which takes
+//   its destination types from the catalog, is skipped with it.
 //
 // Tests that build and check tensors element by element:
 //
 // The tests that build or check tensors through the helpers in
-// include/tcapict/elem_sweep.h and include/tcapict/zeroth_order.h, among them
-// the concatenate, stack and linear_combine tests and most zeroth-order tests,
+// include/tcapict/elem_sweep.h and include/tcapict/zeroth_order.h, among them the
+// concatenate, stack and linear_combine tests and most zeroth-order tests,
 // reach set_elem, shape and get_elem through them and, apart from the tests of
 // the other constructors, build their inputs with zeros. Defining any of
 // TCAPICT_SKIP_ZEROS, TCAPICT_SKIP_SET_ELEM, TCAPICT_SKIP_GET_ELEM or
 // TCAPICT_SKIP_SHAPE therefore skips those tests too, so a gap in one of those
 // four APIs is not reported as a failure of the API a test is about. The
 // tests using the zeroth-order checks also reach order and size, and
-// TCAPICT_SKIP_ORDER or TCAPICT_SKIP_SIZE skips them as well.
-// TCAPICT_HAS_ELEM_SWEEP, defined below, holds exactly when none of the four is
-// skipped, and TCAPICT_HAS_ZEROTH_ORDER_SWEEP when in addition neither
-// TCAPICT_SKIP_ORDER nor TCAPICT_SKIP_SIZE is defined.
+// TCAPICT_SKIP_ORDER or TCAPICT_SKIP_SIZE skips them as well. TCAPICT_HAS_ELEM_SWEEP,
+// defined below, holds exactly when none of the four is skipped, and
+// TCAPICT_HAS_ZEROTH_ORDER_SWEEP when in addition neither TCAPICT_SKIP_ORDER nor
+// TCAPICT_SKIP_SIZE is defined.
 //
 // The tests that check a diagonal tensor through TCAPICT_EXPECT_DIAGONAL in
 // include/tcapict/diagonal.h, test_eye and the diag, svd, trunc_svd, eig and
@@ -93,10 +91,10 @@
 // Precision-conditional skip macros (factorization + iterative APIs):
 //
 // When the corresponding TCAPICT_SKIP_<API>_SINGLE_PRECISION macro is
-// defined, the matching test function expands
-// TCAPICT_RETURN_IF_SINGLE_PRECISION at the top of its body. That helper is an
-// `if constexpr`-guarded early return: when the test is instantiated for a TenT
-// whose `tcapi::real_t<TenT>` is `float` (covering both `float` and
+// defined, the matching test function expands TCAPICT_RETURN_IF_SINGLE_PRECISION
+// at the top of its body. That helper is an `if constexpr`-guarded early
+// return: when the test is instantiated for a TenT whose
+// `tcapi::real_t<TenT>` is `float` (covering both `float` and
 // `std::complex<float>` element types), the return statement executes
 // before any assertion runs; for any other instantiation (`real_t<TenT>`
 // is anything other than `float`), the `if constexpr`'s discarded-
@@ -110,11 +108,10 @@
 //
 // Available per-API gating macros (10 total, defined by the backend):
 //   TCAPICT_SKIP_EIG_SINGLE_PRECISION,    TCAPICT_SKIP_EIGH_SINGLE_PRECISION,
-//   TCAPICT_SKIP_EIGVALS_SINGLE_PRECISION,
-//   TCAPICT_SKIP_EIGVALSH_SINGLE_PRECISION, TCAPICT_SKIP_SVD_SINGLE_PRECISION,
-//   TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION, TCAPICT_SKIP_QR_SINGLE_PRECISION,
-//   TCAPICT_SKIP_LQ_SINGLE_PRECISION, TCAPICT_SKIP_EXP_SINGLE_PRECISION,
-//   TCAPICT_SKIP_INVERSE_SINGLE_PRECISION
+//   TCAPICT_SKIP_EIGVALS_SINGLE_PRECISION, TCAPICT_SKIP_EIGVALSH_SINGLE_PRECISION,
+//   TCAPICT_SKIP_SVD_SINGLE_PRECISION,    TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION,
+//   TCAPICT_SKIP_QR_SINGLE_PRECISION,     TCAPICT_SKIP_LQ_SINGLE_PRECISION,
+//   TCAPICT_SKIP_EXP_SINGLE_PRECISION,    TCAPICT_SKIP_INVERSE_SINGLE_PRECISION
 //
 // Limitation: this is a *runtime* skip path. The test body following the
 // helper is always part of the function template and gets instantiated

@@ -7,11 +7,12 @@
 // before the first include of either.
 //
 // Usage:
-//   #include <tcapi/tcapi.h>                // the implementation's API and
-//   tensor types #include <tcapict/adapters/doctest.h> using MyTen_F  =
-//   backend::Tensor<float>; using MyTen_CD =
-//   backend::Tensor<std::complex<double>>; TCAPICT_DOCTEST_REGISTER_REAL(float,
-//   MyTen_F) TCAPICT_DOCTEST_REGISTER_CPLX(cdouble, MyTen_CD)
+//   #include <tcapi/tcapi.h>                // the implementation's API and tensor types
+//   #include <tcapict/adapters/doctest.h>
+//   using MyTen_F  = backend::Tensor<float>;
+//   using MyTen_CD = backend::Tensor<std::complex<double>>;
+//   TCAPICT_DOCTEST_REGISTER_REAL(float,   MyTen_F)
+//   TCAPICT_DOCTEST_REGISTER_CPLX(cdouble, MyTen_CD)
 //
 // `tag` is stringized into the TEST_CASE name to disambiguate across type
 // variants; it must be identifier-like.

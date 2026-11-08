@@ -1,1 +1,5 @@
 BasedOnStyle: LLVM
+# LLVM style reflows comments past the column limit, which merges code
+# examples written inside comments into running text. Keep comment lines as
+# written and only reindent them.
+ReflowComments: IndentOnly

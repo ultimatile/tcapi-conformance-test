@@ -193,8 +193,8 @@ void expect_zeroth_order_at(const char *file, int line,
 } // namespace tcapict
 
 /// expect_zeroth_order_at with the caller's file and line:
-/// TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, value[, cat[, n]]), the line chosen
-/// as for TCAPICT_EXPECT_ELEMS.
+/// TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, value[, cat[, n]]), the line chosen as for
+/// TCAPICT_EXPECT_ELEMS.
 #define TCAPICT_EXPECT_ZEROTH_ORDER(...)                                       \
   ::tcapict::expect_zeroth_order_at(__FILE__, __LINE__, __VA_ARGS__)
 

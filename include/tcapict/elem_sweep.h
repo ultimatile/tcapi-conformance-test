@@ -120,8 +120,8 @@ template <typename TenT> tcapi::elem_t<TenT> written_elem(double v) {
 /// Sets the element at every coordinate `coors` of `tensor` to the value with
 /// real part `v = value_at(coors)` and, for a complex element type, imaginary
 /// part `-0.5 * v`, so that an operation losing or conjugating imaginary parts
-/// is visible. Pairs with `TCAPICT_EXPECT_ELEMS`, so a test can build an input
-/// and check it with the same function; real-coefficient linear operations keep
+/// is visible. Pairs with `TCAPICT_EXPECT_ELEMS`, so a test can build an input and
+/// check it with the same function; real-coefficient linear operations keep
 /// the imaginary part at `-0.5` times the real part. A std::exception from
 /// shape, set_elem or `value_at`, an assertion failing in `value_at` included,
 /// is reported at `file`:`line` as detail::nothrow_call reports it; call it
@@ -147,8 +147,8 @@ void set_elems_at(const char *file, int line, tcapi_test_fixture<TenT> &fix,
 /// `tol_category::exact` gives, admits only equality, and any other tolerance
 /// admits only a difference below it. A real
 /// `value_at` result `v` stands for `written<TenT>(v)`, the value
-/// `TCAPICT_SET_ELEMS` writes; a `std::complex<double>` result is compared as
-/// it is. For a real element type, the expected imaginary part is compared
+/// `TCAPICT_SET_ELEMS` writes; a `std::complex<double>` result is compared as it
+/// is. For a real element type, the expected imaginary part is compared
 /// against zero. The
 /// shape is asserted first, so the sweep reads only coordinates the tensor has.
 /// A shape or element mismatch is reported at `file`:`line`. So is a

@@ -9,8 +9,7 @@ namespace tcapict {
 
 /// Construct an element value from real and imaginary parts.
 /// For real tensor types, the imaginary part is ignored.
-/// Backends with non-standard element types (e.g. cuDoubleComplex) should
-/// specialize this.
+/// Backends with non-standard element types (e.g. cuDoubleComplex) should specialize this.
 template <typename TenT>
 tcapi::elem_t<TenT> make_elem(double real, double imag = 0.0) {
   using elem_type = tcapi::elem_t<TenT>;
@@ -18,8 +17,7 @@ tcapi::elem_t<TenT> make_elem(double real, double imag = 0.0) {
   if constexpr (std::is_same_v<elem_type, cplx_type>) {
     return elem_type(real, imag);
   } else {
-    // NOLINTNEXTLINE(bugprone-narrowing-conversions) -- elem_t is always
-    // floating-point in TCAPI
+    // NOLINTNEXTLINE(bugprone-narrowing-conversions) -- elem_t is always floating-point in TCAPI
     return static_cast<elem_type>(real);
   }
 }
