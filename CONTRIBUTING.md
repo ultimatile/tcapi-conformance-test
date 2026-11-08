@@ -13,7 +13,7 @@ This repository's deliverable is the test suite, so the type is judged against t
 
 ## Formatting
 
-C and C++ files are formatted by clang-format in LLVM style (`.clang-format`), and Markdown files by mdformat.
+C and C++ files are formatted by clang-format in LLVM style with the overrides `.clang-format` sets, and Markdown files by mdformat.
 Shell scripts are checked by shellcheck.
 [pre-commit](https://pre-commit.com/) runs these, along with checks for trailing whitespace, missing final newlines, YAML syntax and leftover merge-conflict markers, on every commit once the hook is installed:
 
@@ -27,7 +27,8 @@ To format every file at once:
 pre-commit run --all-files
 ```
 
-Each tool's version is pinned by its `rev` in `.pre-commit-config.yaml`.
+`.pre-commit-config.yaml` pins each hook's version by its `rev`, and the mdformat-gfm plugin's by its `additional_dependencies` entry.
+`pre-commit autoupdate` updates the `rev`s only, so the plugin's pin is bumped by hand.
 
 ## Local integration check with the cytnx backend
 
