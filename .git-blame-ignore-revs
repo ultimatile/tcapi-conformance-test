@@ -1,0 +1,5 @@
+# Commits git blame skips when run with
+# `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
+
+# refactor: format with clang-format and check formatting in pre-commit (#94)
+d677b5bc201aca283fc26112526eb570565ee32d
