@@ -7,6 +7,7 @@ Header-only, test-framework-agnostic conformance tests for the [Tensor Computing
 TCAPICT verifies that a TCAPI backend correctly implements the API TCAPI V1 defines. Tests are written as template functions that throw `tcapict::assertion_error` on failure, making them usable with any test framework (doctest, Google Test, Catch2) or standalone.
 
 Known TCAPI backend implementations:
+
 - [Cytnx backend](https://github.com/r-ccs-cms/tcapi-backend-cytnx)
 
 ## Usage
@@ -51,6 +52,7 @@ TCAPICT_DOCTEST_REGISTER_CPLX(cdouble, MyTen_CD)
 `TCAPICT_DOCTEST_REGISTER_CPLX` registers every test that applies to complex tensors (`ALL_TYPES` plus `CPLX_ONLY` tests such as `test_to_cplx_complex_to_complex`).
 
 Constraints:
+
 - `tag` must be identifier-like; it is stringized into each `TEST_CASE` name to disambiguate type variants.
 - `TenT` must be passable as a single macro argument. Types with unparenthesized commas (e.g., `std::map<K, V>`) cannot be passed directly — introduce a `using` alias first.
 
@@ -135,7 +137,7 @@ This handles backends with runtime-buggy APIs (the call compiles but produces wr
 ## Test Categories
 
 | Category | Header | APIs exercised |
-|---|---|---|
+| -- | -- | -- |
 | Construction | `tests/construction.h` | `allocate`, `assign_from_range`, `clear`, `copy`, `eye`, `fill`, `move`, `random`, `to_range`, `zeros` |
 | Read-only getters | `tests/read_only_getters.h` | `get_elem`, `order`, `set_elem`, `shape`, `size`, `size_bytes` |
 | Tensor manipulation | `tests/tensor_manipulation.h` | `concatenate`, `cplx_conj`, `diag`, `expand`, `extract_sub`, `for_each`, `for_each_with_coors`, `imag`, `real`, `replace_sub`, `reshape`, `shrink`, `stack`, `to_cplx`, `transpose` |
