@@ -23,7 +23,8 @@ namespace tests {
 
 // --- norm (basic: identity matrix) ---
 
-template <typename TenT> void test_norm_identity(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_norm_identity(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_NORM
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::reduction, 9);
@@ -96,7 +97,8 @@ void test_linear_combine_weighted(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_SET_ELEMS(fix, tensor_b, b_at);
 
   // A named list; see "Inputs to multi-input operations" in CONTRIBUTING.md.
-  tcapi::List<tcapi::CRef<TenT>> ins = {std::cref(tensor_a), std::cref(tensor_b)};
+  tcapi::List<tcapi::CRef<TenT>> ins = {std::cref(tensor_a),
+                                        std::cref(tensor_b)};
   // For a complex element type the coefficients have imaginary parts too, so
   // a backend that conjugates them or drops their imaginary parts fails.
   const std::complex<double> s_a(0.5, is_complex_v<TenT> ? 0.25 : 0.0);
@@ -105,8 +107,8 @@ void test_linear_combine_weighted(tcapi_test_fixture<TenT> &fix) {
       make_elem<TenT>(s_a.real(), s_a.imag()),
       make_elem<TenT>(s_b.real(), s_b.imag())};
 
-  auto result =
-      TCAPICT_NOTHROW_VALUE(tcapi::linear_combine<TenT>(ctx, ins, coefficients));
+  auto result = TCAPICT_NOTHROW_VALUE(
+      tcapi::linear_combine<TenT>(ctx, ins, coefficients));
 
   // Expected: s_a*a + s_b*b; for a real element type, real parts
   // [[10.5,13],[15.5,18]]
@@ -148,8 +150,8 @@ void test_linear_combine_single(tcapi_test_fixture<TenT> &fix) {
   // An input element is v(1 - 0.5i), and (3 - 1.5i) v (1 - 0.5i) =
   // v (2.25 - 3i) keeps an imaginary part in the result.
   const std::complex<double> s(3.0, is_complex_v<TenT> ? -1.5 : 0.0);
-  tcapi::List<tcapi::elem_t<TenT>> single_coef = {make_elem<TenT>(s.real(),
-                                                                  s.imag())};
+  tcapi::List<tcapi::elem_t<TenT>> single_coef = {
+      make_elem<TenT>(s.real(), s.imag())};
   auto scaled = TCAPICT_NOTHROW_VALUE(
       tcapi::linear_combine<TenT>(ctx, single_list, single_coef));
   TCAPICT_EXPECT_ELEMS(fix, scaled, {1, 1}, [&](const auto &x) {
@@ -158,7 +160,8 @@ void test_linear_combine_single(tcapi_test_fixture<TenT> &fix) {
 
   // Input unchanged; see "Inputs to multi-input operations" in
   // CONTRIBUTING.md.
-  TCAPICT_EXPECT_ELEMS(fix, single_tensor, {1, 1}, single_at, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(fix, single_tensor, {1, 1}, single_at,
+                       tol_category::exact);
 #else
   (void)fix;
 #endif
@@ -171,16 +174,19 @@ void test_linear_combine_single(tcapi_test_fixture<TenT> &fix) {
 // distinct input values and the read-back.
 template <typename TenT>
 void test_linear_combine_zeroth_order(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_LINEAR_COMBINE) && defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
+#if !defined(TCAPICT_SKIP_LINEAR_COMBINE) &&                                   \
+    defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
   auto &ctx = fix.context();
   auto tensor_a = tcapi::zeros<TenT>(ctx, {});
   auto tensor_b = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, tensor_a, 1.25);
   TCAPICT_SET_ZEROTH_ORDER(fix, tensor_b, -3.5);
 
-  tcapi::List<tcapi::CRef<TenT>> ins = {std::cref(tensor_a), std::cref(tensor_b)};
+  tcapi::List<tcapi::CRef<TenT>> ins = {std::cref(tensor_a),
+                                        std::cref(tensor_b)};
   auto sum = TCAPICT_NOTHROW_VALUE(tcapi::linear_combine<TenT>(ctx, ins));
-  TCAPICT_EXPECT_ZEROTH_ORDER(fix, sum, written<TenT>(1.25) + written<TenT>(-3.5),
+  TCAPICT_EXPECT_ZEROTH_ORDER(fix, sum,
+                              written<TenT>(1.25) + written<TenT>(-3.5),
                               tol_category::reduction, 2);
 
   const std::complex<double> s_a(0.5, is_complex_v<TenT> ? 0.25 : 0.0);
@@ -188,8 +194,8 @@ void test_linear_combine_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   tcapi::List<tcapi::elem_t<TenT>> coefficients = {
       make_elem<TenT>(s_a.real(), s_a.imag()),
       make_elem<TenT>(s_b.real(), s_b.imag())};
-  auto weighted =
-      TCAPICT_NOTHROW_VALUE(tcapi::linear_combine<TenT>(ctx, ins, coefficients));
+  auto weighted = TCAPICT_NOTHROW_VALUE(
+      tcapi::linear_combine<TenT>(ctx, ins, coefficients));
   TCAPICT_EXPECT_ZEROTH_ORDER(
       fix, weighted, s_a * written<TenT>(1.25) + s_b * written<TenT>(-3.5),
       tol_category::reduction, 2);
@@ -218,10 +224,10 @@ void test_normalize_inplace(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_ASSERT_CLOSE(std::abs(original_norm), 5.0, tol);
 
   // Verify normalized values
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 0.6,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})), 0.8,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       0.6, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})),
+                       0.8, tol);
 
   // New norm should be 1
   auto new_norm = tcapi::norm(ctx, tensor);
@@ -251,14 +257,16 @@ void test_normalize_outofplace(tcapi_test_fixture<TenT> &fix) {
 
   // The input is read back at {0, 0}; see "Out-of-place inputs" in
   // CONTRIBUTING.md.
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, original, {0, 0})), 2.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, original, {0, 0})),
+                       2.0, tol);
 
   // Normalized tensor
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, normalized, {0, 0})),
-                       2.0 / 3.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, normalized, {2, 0})),
-                       1.0 / 3.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<TenT>(tcapi::get_elem(ctx, normalized, {0, 0})), 2.0 / 3.0,
+      tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<TenT>(tcapi::get_elem(ctx, normalized, {2, 0})), 1.0 / 3.0,
+      tol);
 
   auto new_norm = tcapi::norm(ctx, normalized);
   TCAPICT_ASSERT_CLOSE(new_norm, 1.0, tol);
@@ -281,8 +289,8 @@ void test_normalize_edge_cases(tcapi_test_fixture<TenT> &fix) {
 
   auto norm1 = tcapi::normalize(ctx, single_elem);
   TCAPICT_ASSERT_CLOSE(std::abs(norm1), 7.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, single_elem, {1, 1})),
-                       1.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<TenT>(tcapi::get_elem(ctx, single_elem, {1, 1})), 1.0, tol);
 
   // Zero tensor
   auto zero_tensor = tcapi::zeros<TenT>(ctx, {2, 2});
@@ -307,7 +315,8 @@ void test_normalize_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   const auto w = written<TenT>(-2.0);
   const auto original = tcapi::normalize(ctx, tensor);
   TCAPICT_ASSERT_CLOSE(original, std::abs(w), tol);
-  TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, w / std::abs(w), tol_category::reduction);
+  TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, w / std::abs(w),
+                              tol_category::reduction);
 
   // Out of place; the input is read back, see "Out-of-place inputs" in
   // CONTRIBUTING.md.
@@ -349,7 +358,8 @@ void test_norm_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   auto tol = tolerance(fix, tol_category::reduction);
   auto tensor = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, tensor, -2.0);
-  TCAPICT_ASSERT_CLOSE(tcapi::norm(ctx, tensor), std::abs(written<TenT>(-2.0)), tol);
+  TCAPICT_ASSERT_CLOSE(tcapi::norm(ctx, tensor), std::abs(written<TenT>(-2.0)),
+                       tol);
 #else
   (void)fix;
 #endif
@@ -379,10 +389,14 @@ void test_contract_matmul(tcapi_test_fixture<TenT> &fix) {
   tcapi::contract(ctx, a, "ij", b, "jk", c, "ik");
 
   // A*B = [[19,22],[43,50]]
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 0})), 19.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 1})), 22.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 0})), 43.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 1})), 50.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 0})), 19.0,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 1})), 22.0,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 0})), 43.0,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 1})), 50.0,
+                       tol);
 #else
   (void)fix;
 #endif
@@ -512,8 +526,10 @@ void test_contract_outer_product(tcapi_test_fixture<TenT> &fix) {
   auto c_shape = tcapi::shape(ctx, c);
   TCAPICT_ASSERT(c_shape[0] == 2);
   TCAPICT_ASSERT(c_shape[1] == 3);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 0})), 3.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 2})), 10.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {0, 0})), 3.0,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, c, {1, 2})), 10.0,
+                       tol);
 #else
   (void)fix;
 #endif
@@ -623,8 +639,8 @@ template <typename TenT> void test_lq(tcapi_test_fixture<TenT> &fix) {
 // trunc_svd_expected_epsilon below so the matrix and the expected values cannot
 // drift apart.
 inline constexpr double kTruncSvdFixtureSvs[] = {3.0, 2.0, 1.0, 0.1};
-inline constexpr int kTruncSvdFixtureRank =
-    static_cast<int>(sizeof(kTruncSvdFixtureSvs) / sizeof(kTruncSvdFixtureSvs[0]));
+inline constexpr int kTruncSvdFixtureRank = static_cast<int>(
+    sizeof(kTruncSvdFixtureSvs) / sizeof(kTruncSvdFixtureSvs[0]));
 
 // The tests take the singular values trunc_svd retains on the fixture matrix
 // to be a prefix of the table, which holds only while the table is
@@ -664,13 +680,15 @@ inline std::vector<double> trunc_svd_fixture_svs(int chi, double scale = 1.0) {
 // that thresholds on epsilon from one that thresholds on the raw singular
 // values.
 template <typename TenT>
-TenT trunc_svd_test_matrix(typename tcapi::tensor_traits<TenT>::context_handle_t &ctx,
-                           double scale = 1.0) {
+TenT trunc_svd_test_matrix(
+    typename tcapi::tensor_traits<TenT>::context_handle_t &ctx,
+    double scale = 1.0) {
   // elem_coor_t is backend-defined and may be unsigned, and a braced
   // initializer rejects a narrowing conversion unless the argument is a
   // constant expression. kTruncSvdFixtureRank is a constant expression, so the
   // shape below needs no cast; the loop counter is not, so the coordinates do.
-  auto matrix = tcapi::zeros<TenT>(ctx, {kTruncSvdFixtureRank, kTruncSvdFixtureRank});
+  auto matrix =
+      tcapi::zeros<TenT>(ctx, {kTruncSvdFixtureRank, kTruncSvdFixtureRank});
   for (int i = 0; i < kTruncSvdFixtureRank; ++i) {
     const auto coor = static_cast<tcapi::elem_coor_t<TenT>>(i);
     tcapi::set_elem(ctx, matrix, {coor, coor},
@@ -689,7 +707,8 @@ TenT trunc_svd_test_matrix(typename tcapi::tensor_traits<TenT>::context_handle_t
 // TCAPI V1 and not against a second route through the same code. Takes no
 // scale: epsilon is a ratio of sums of squares and so is scale-invariant.
 template <typename TenT>
-tcapi::real_t<TenT> trunc_svd_expected_epsilon_from(const double *svs, int rank, int chi) {
+tcapi::real_t<TenT> trunc_svd_expected_epsilon_from(const double *svs, int rank,
+                                                    int chi) {
   TCAPICT_ASSERT(chi >= 0 && chi <= rank);
   double total = 0.0;
   double discarded = 0.0;
@@ -705,9 +724,10 @@ tcapi::real_t<TenT> trunc_svd_expected_epsilon_from(const double *svs, int rank,
 
 // Helper: the above bound to the shared [3, 2, 1, 0.1] fixture spectrum, so the
 // matrix builder and the expected values cannot drift apart.
-template <typename TenT> tcapi::real_t<TenT> trunc_svd_expected_epsilon(int chi) {
-  return trunc_svd_expected_epsilon_from<TenT>(kTruncSvdFixtureSvs, kTruncSvdFixtureRank,
-                                               chi);
+template <typename TenT>
+tcapi::real_t<TenT> trunc_svd_expected_epsilon(int chi) {
+  return trunc_svd_expected_epsilon_from<TenT>(kTruncSvdFixtureSvs,
+                                               kTruncSvdFixtureRank, chi);
 }
 
 // Helper: the suite's one call of overload (2), whose trailing parameters
@@ -728,13 +748,15 @@ template <typename TenT> tcapi::real_t<TenT> trunc_svd_expected_epsilon(int chi)
 // truncation error, reaches it again at its own precision.
 template <typename TenT>
 void trunc_svd_by_strategy(tcapi::context_handle_t<TenT> &ctx, const TenT &a,
-                           int num_of_bds_as_row, TenT &u, tcapi::real_ten_t<TenT> &sigma,
-                           TenT &v_dag, tcapi::real_t<TenT> &trunc_err, int chi_max,
+                           int num_of_bds_as_row, TenT &u,
+                           tcapi::real_ten_t<TenT> &sigma, TenT &v_dag,
+                           tcapi::real_t<TenT> &trunc_err, int chi_max,
                            tcapi::real_t<TenT> s_min, int chi_min,
                            tcapi::real_t<TenT> target_trunc_err) {
-  tcapi::trunc_svd(ctx, a, static_cast<tcapi::order_t<TenT>>(num_of_bds_as_row), u, sigma, v_dag,
-                   trunc_err, static_cast<tcapi::bond_dim_t<TenT>>(chi_max), s_min,
-                   static_cast<tcapi::bond_dim_t<TenT>>(chi_min), target_trunc_err);
+  tcapi::trunc_svd(
+      ctx, a, static_cast<tcapi::order_t<TenT>>(num_of_bds_as_row), u, sigma,
+      v_dag, trunc_err, static_cast<tcapi::bond_dim_t<TenT>>(chi_max), s_min,
+      static_cast<tcapi::bond_dim_t<TenT>>(chi_min), target_trunc_err);
 }
 
 // Helper: run overload (2) on the fixture spectrum and assert sigma, which
@@ -754,9 +776,11 @@ void trunc_svd_by_strategy(tcapi::context_handle_t<TenT> &ctx, const TenT &a,
 // TCAPICT_SKIP_TRUNC_SVD or skips an API that TCAPICT_HAS_DIAGONAL_CHECK
 // requires.
 template <typename TenT>
-void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale, int chi_max,
-                                   tcapi::real_t<TenT> s_min, int chi_min,
-                                   tcapi::real_t<TenT> target_trunc_err, int expected_chi) {
+void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale,
+                                   int chi_max, tcapi::real_t<TenT> s_min,
+                                   int chi_min,
+                                   tcapi::real_t<TenT> target_trunc_err,
+                                   int expected_chi) {
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::factorization);
   auto matrix = trunc_svd_test_matrix<TenT>(ctx, scale);
@@ -765,14 +789,16 @@ void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale, 
   tcapi::real_ten_t<TenT> s_diag;
   tcapi::real_t<TenT> trunc_err = -1.0;
 
-  trunc_svd_by_strategy(ctx, matrix, 1, u, s_diag, v_dag, trunc_err, chi_max, s_min, chi_min,
-                        target_trunc_err);
+  trunc_svd_by_strategy(ctx, matrix, 1, u, s_diag, v_dag, trunc_err, chi_max,
+                        s_min, chi_min, target_trunc_err);
 
   // The tolerance is absolute, so it scales with the values it bounds; epsilon,
   // a ratio, keeps the unscaled one.
-  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(expected_chi, scale),
+  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag,
+                          trunc_svd_fixture_svs(expected_chi, scale),
                           tol * scale, diag_order::any);
-  TCAPICT_ASSERT_CLOSE(trunc_err, trunc_svd_expected_epsilon<TenT>(expected_chi), tol);
+  TCAPICT_ASSERT_CLOSE(trunc_err,
+                       trunc_svd_expected_epsilon<TenT>(expected_chi), tol);
 }
 #endif
 
@@ -920,14 +946,15 @@ void test_trunc_svd_non_diagonal_input(tcapi_test_fixture<TenT> &fix) {
   const double svs[] = {std::sqrt(15.0 + std::sqrt(221.0)),
                         std::sqrt(15.0 - std::sqrt(221.0))};
   TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, {svs[0]}, tol, diag_order::any);
-  TCAPICT_ASSERT_CLOSE(trunc_err, trunc_svd_expected_epsilon_from<TenT>(svs, 2, 1),
-                       tol);
+  TCAPICT_ASSERT_CLOSE(trunc_err,
+                       trunc_svd_expected_epsilon_from<TenT>(svs, 2, 1), tol);
 #else
   (void)fix;
 #endif
 }
 
-// --- truncated SVD, overload (2): chi_max / s_min / chi_min / target_trunc_err ---
+// --- truncated SVD, overload (2) ---
+// chi_max / s_min / chi_min / target_trunc_err
 //
 // TCAPI V1's rule, with the truncation error for keeping chi values
 // epsilon(chi) = sum_{i>=chi} s_i^2 / sum_{i<kappa} s_i^2:
@@ -959,9 +986,10 @@ void test_trunc_svd_target_err_selects_chi(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4, /*s_min=*/0.0,
-                                     /*chi_min=*/1, /*target_trunc_err=*/0.1,
-                                     /*expected_chi=*/2);
+  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4,
+                                      /*s_min=*/0.0,
+                                      /*chi_min=*/1, /*target_trunc_err=*/0.1,
+                                      /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -977,9 +1005,10 @@ void test_trunc_svd_target_err_scale_invariant(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0e-3, /*chi_max=*/4, /*s_min=*/0.0,
-                                     /*chi_min=*/1, /*target_trunc_err=*/0.1,
-                                     /*expected_chi=*/2);
+  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0e-3, /*chi_max=*/4,
+                                      /*s_min=*/0.0,
+                                      /*chi_min=*/1, /*target_trunc_err=*/0.1,
+                                      /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -993,9 +1022,10 @@ void test_trunc_svd_target_err_chi_min_floor(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4, /*s_min=*/0.0,
-                                     /*chi_min=*/3, /*target_trunc_err=*/0.5,
-                                     /*expected_chi=*/3);
+  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4,
+                                      /*s_min=*/0.0,
+                                      /*chi_min=*/3, /*target_trunc_err=*/0.5,
+                                      /*expected_chi=*/3);
 #else
   (void)fix;
 #endif
@@ -1009,9 +1039,10 @@ void test_trunc_svd_target_err_chi_max_cap(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/2, /*s_min=*/0.0,
-                                     /*chi_min=*/1, /*target_trunc_err=*/1.0e-6,
-                                     /*expected_chi=*/2);
+  trunc_svd_expect_retained_chi<TenT>(
+      fix, /*scale=*/1.0, /*chi_max=*/2, /*s_min=*/0.0,
+      /*chi_min=*/1, /*target_trunc_err=*/1.0e-6,
+      /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -1027,7 +1058,8 @@ void test_trunc_svd_target_err_chi_max_cap(tcapi_test_fixture<TenT> &fix) {
 /// call's retained chi and truncation error to the values TCAPI V1 prescribes
 /// for chi_max = 2 keeps the test able to fail on such a backend.
 template <typename TenT>
-void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<TenT> &fix) {
+void test_trunc_svd_target_err_zero_matches_chi_max_overload(
+    tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
@@ -1039,16 +1071,18 @@ void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<
   tcapi::real_ten_t<TenT> s_general;
   tcapi::real_t<TenT> err_general = -1.0;
   auto matrix_general = trunc_svd_test_matrix<TenT>(ctx);
-  trunc_svd_by_strategy(ctx, matrix_general, 1, u_general, s_general, v_dag_general,
-                        err_general, /*chi_max=*/2, /*s_min=*/0.0, /*chi_min=*/1,
+  trunc_svd_by_strategy(ctx, matrix_general, 1, u_general, s_general,
+                        v_dag_general, err_general, /*chi_max=*/2,
+                        /*s_min=*/0.0, /*chi_min=*/1,
                         /*target_trunc_err=*/0.0);
 
   TenT u_simple, v_dag_simple;
   tcapi::real_ten_t<TenT> s_simple;
   tcapi::real_t<TenT> err_simple = -1.0;
   auto matrix_simple = trunc_svd_test_matrix<TenT>(ctx);
-  tcapi::trunc_svd(ctx, matrix_simple, 1, u_simple, s_simple, v_dag_simple, err_simple,
-                   static_cast<tcapi::bond_dim_t<TenT>>(2), static_cast<tcapi::real_t<TenT>>(0.0));
+  tcapi::trunc_svd(ctx, matrix_simple, 1, u_simple, s_simple, v_dag_simple,
+                   err_simple, static_cast<tcapi::bond_dim_t<TenT>>(2),
+                   static_cast<tcapi::real_t<TenT>>(0.0));
 
   // No chi below chi_max = 2 reaches epsilon <= 0, so both calls must stop at
   // 2, keep the singular values 3 and 2, and report epsilon(2). Assert that
@@ -1066,8 +1100,9 @@ void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<
   // also compared with each other, as multisets, since the suite asserts no
   // order for trunc_svd's diagonal.
   TCAPICT_ASSERT_CLOSE(err_general, err_simple, tol);
-  TCAPICT_EXPECT_DIAGONAL(ctx, s_simple, TCAPICT_REAL_DIAGONAL_OF(ctx, s_general),
-                          tol, diag_order::any);
+  TCAPICT_EXPECT_DIAGONAL(ctx, s_simple,
+                          TCAPICT_REAL_DIAGONAL_OF(ctx, s_general), tol,
+                          diag_order::any);
 
   // The factors are compared through the product they reconstruct rather than
   // elementwise: for a spectrum with distinct singular values the columns of u
@@ -1078,7 +1113,8 @@ void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<
   // The reconstruction is invariant under both, and unlike a shape comparison
   // it does read the factors' values.
   using RealTenT = tcapi::real_ten_t<TenT>;
-  auto reconstruct = [&ctx](const TenT &u_in, const RealTenT &s_in, const TenT &v_in) {
+  auto reconstruct = [&ctx](const TenT &u_in, const RealTenT &s_in,
+                            const TenT &v_in) {
     const auto u_shape = tcapi::shape(ctx, u_in);
     // u is {4, 2}: its rows are the fixture's and its bond is sigma's, already
     // checked to be {2, 2}. Assert that before reading either along it.
@@ -1113,7 +1149,8 @@ void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<
 
   auto reconstructed_general = reconstruct(u_general, s_general, v_dag_general);
   auto reconstructed_simple = reconstruct(u_simple, s_simple, v_dag_simple);
-  TCAPICT_ASSERT(tcapi::close(ctx, reconstructed_general, reconstructed_simple, tol));
+  TCAPICT_ASSERT(
+      tcapi::close(ctx, reconstructed_general, reconstructed_simple, tol));
 
   // The two products agreeing does not show that sigma is paired with the
   // right columns of u and v, since the suite leaves sigma's order free: a
@@ -1138,14 +1175,16 @@ void test_trunc_svd_target_err_zero_matches_chi_max_overload(tcapi_test_fixture<
 /// chi_min. s_min = 0.5 leaves survivors [3, 2, 1], and chi_min = 4 cannot be
 /// met, so chi must be 3 rather than 4.
 template <typename TenT>
-void test_trunc_svd_chi_min_not_restored_below_s_min(tcapi_test_fixture<TenT> &fix) {
+void test_trunc_svd_chi_min_not_restored_below_s_min(
+    tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4, /*s_min=*/0.5,
-                                     /*chi_min=*/4, /*target_trunc_err=*/0.0,
-                                     /*expected_chi=*/3);
+  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/1.0, /*chi_max=*/4,
+                                      /*s_min=*/0.5,
+                                      /*chi_min=*/4, /*target_trunc_err=*/0.0,
+                                      /*expected_chi=*/3);
 #else
   (void)fix;
 #endif
@@ -1186,7 +1225,8 @@ void test_trunc_svd_chi_min_not_restored_below_s_min(tcapi_test_fixture<TenT> &f
 /// away from epsilon(2) = 9 / 50, so no rounding an implementation could
 /// plausibly carry lets chi = 2 satisfy the target and blur the two operators.
 template <typename TenT>
-void test_trunc_svd_target_err_boundary_is_inclusive(tcapi_test_fixture<TenT> &fix) {
+void test_trunc_svd_target_err_boundary_is_inclusive(
+    tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
@@ -1212,11 +1252,13 @@ void test_trunc_svd_target_err_boundary_is_inclusive(tcapi_test_fixture<TenT> &f
   tcapi::real_ten_t<TenT> s_pinned;
   tcapi::real_t<TenT> epsilon_at_one = -1.0;
   auto matrix_pinned = build();
-  tcapi::trunc_svd(ctx, matrix_pinned, 1, u_pinned, s_pinned, v_dag_pinned, epsilon_at_one,
-                   static_cast<tcapi::bond_dim_t<TenT>>(1), static_cast<tcapi::real_t<TenT>>(0.0));
+  tcapi::trunc_svd(ctx, matrix_pinned, 1, u_pinned, s_pinned, v_dag_pinned,
+                   epsilon_at_one, static_cast<tcapi::bond_dim_t<TenT>>(1),
+                   static_cast<tcapi::real_t<TenT>>(0.0));
 
   TCAPICT_EXPECT_DIAGONAL(ctx, s_pinned, {5.0}, tol, diag_order::any);
-  TCAPICT_ASSERT_CLOSE(epsilon_at_one, trunc_svd_expected_epsilon_from<TenT>(kSvs, kRank, 1),
+  TCAPICT_ASSERT_CLOSE(epsilon_at_one,
+                       trunc_svd_expected_epsilon_from<TenT>(kSvs, kRank, 1),
                        tol);
 
   // Now let the same epsilon arrive as the target. chi = 1 is admissible under
@@ -1225,8 +1267,9 @@ void test_trunc_svd_target_err_boundary_is_inclusive(tcapi_test_fixture<TenT> &f
   tcapi::real_ten_t<TenT> s_diag;
   tcapi::real_t<TenT> trunc_err = -1.0;
   auto matrix = build();
-  trunc_svd_by_strategy(ctx, matrix, 1, u, s_diag, v_dag, trunc_err, /*chi_max=*/3,
-                        /*s_min=*/0.0, /*chi_min=*/1, /*target_trunc_err=*/epsilon_at_one);
+  trunc_svd_by_strategy(
+      ctx, matrix, 1, u, s_diag, v_dag, trunc_err, /*chi_max=*/3,
+      /*s_min=*/0.0, /*chi_min=*/1, /*target_trunc_err=*/epsilon_at_one);
 
   TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, {5.0}, tol, diag_order::any);
 #else
@@ -1262,9 +1305,10 @@ void test_trunc_svd_argument_order(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/10.0, /*chi_max=*/3, /*s_min=*/3.0,
-                                     /*chi_min=*/1, /*target_trunc_err=*/0.1,
-                                     /*expected_chi=*/2);
+  trunc_svd_expect_retained_chi<TenT>(fix, /*scale=*/10.0, /*chi_max=*/3,
+                                      /*s_min=*/3.0,
+                                      /*chi_min=*/1, /*target_trunc_err=*/0.1,
+                                      /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -1325,7 +1369,8 @@ template <typename TenT> void test_eig_distinct(tcapi_test_fixture<TenT> &fix) {
 
 // --- eigh (Hermitian eigendecomposition of identity) ---
 
-template <typename TenT> void test_eigh_identity(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_eigh_identity(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_EIGH) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_EIGH_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
@@ -1393,7 +1438,8 @@ template <typename TenT> void test_exp_identity(tcapi_test_fixture<TenT> &fix) {
   double expected_e = std::exp(1.0);
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})),
                        expected_e, eps);
-  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0, eps);
+  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0,
+                       eps);
 #else
   (void)fix;
 #endif
@@ -1419,8 +1465,10 @@ template <typename TenT> void test_exp_diagonal(tcapi_test_fixture<TenT> &fix) {
                        std::exp(1.0), eps);
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})),
                        std::exp(2.0), eps);
-  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0, eps);
-  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {1, 0})), 0.0, eps);
+  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0,
+                       eps);
+  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {1, 0})), 0.0,
+                       eps);
 #else
   (void)fix;
 #endif
@@ -1440,11 +1488,12 @@ template <typename TenT> void test_exp_zero(tcapi_test_fixture<TenT> &fix) {
   TenT result;
   tcapi::exp(ctx, zero_matrix, 1, result);
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})), 1.0,
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})),
+                       1.0, eps);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})),
+                       1.0, eps);
+  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0,
                        eps);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})), 1.0,
-                       eps);
-  TCAPICT_ASSERT_CLOSE(std::abs(tcapi::get_elem(ctx, result, {0, 1})), 0.0, eps);
 #else
   (void)fix;
 #endif
@@ -1470,10 +1519,14 @@ void test_exp_anti_hermitian(tcapi_test_fixture<TenT> &fix) {
   // exp([[0,1],[-1,0]]) = [[cos(1), sin(1)], [-sin(1), cos(1)]]
   auto c = std::cos(1.0);
   auto s = std::sin(1.0);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})), c, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 1})), s, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 0})), -s, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})), c, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})), c,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 1})), s,
+                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 0})),
+                       -s, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})), c,
+                       tol);
 #else
   (void)fix;
 #endif
@@ -1513,7 +1566,8 @@ template <typename TenT> void test_inverse(tcapi_test_fixture<TenT> &fix) {
 
 // --- scale: in-place ---
 
-template <typename TenT> void test_scale_inplace(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_scale_inplace(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SCALE
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::elementwise);
@@ -1526,14 +1580,14 @@ template <typename TenT> void test_scale_inplace(tcapi_test_fixture<TenT> &fix) 
 
   tcapi::scale(ctx, tensor, make_elem<TenT>(0.5));
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 1.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})), 2.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})), 3.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})), 4.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       1.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})),
+                       2.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})),
+                       3.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})),
+                       4.0, tol);
 #else
   (void)fix;
 #endif
@@ -1554,14 +1608,14 @@ void test_scale_outofplace(tcapi_test_fixture<TenT> &fix) {
   TenT result;
   tcapi::scale(ctx, tensor, make_elem<TenT>(-2.0), result);
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})), -6.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})), -12.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})),
+                       -6.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})),
+                       -12.0, tol);
   // The input is read back at {0, 0}; see "Out-of-place inputs" in
   // CONTRIBUTING.md.
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 3.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       3.0, tol);
 #else
   (void)fix;
 #endif
@@ -1569,7 +1623,8 @@ void test_scale_outofplace(tcapi_test_fixture<TenT> &fix) {
 
 // --- scale: by zero ---
 
-template <typename TenT> void test_scale_by_zero(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_scale_by_zero(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SCALE
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::elementwise);
@@ -1577,10 +1632,10 @@ template <typename TenT> void test_scale_by_zero(tcapi_test_fixture<TenT> &fix) 
   auto tensor = tcapi::eye<TenT>(ctx, 2);
   tcapi::scale(ctx, tensor, make_elem<TenT>(0.0));
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 0.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})), 0.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       0.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})),
+                       0.0, tol);
 #else
   (void)fix;
 #endif
@@ -1619,7 +1674,8 @@ void test_scale_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 
 // --- trace: 2x2 matrix ---
 
-template <typename TenT> void test_trace_partial(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_trace_partial(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRACE) && defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
   auto &ctx = fix.context();
 
@@ -1832,7 +1888,8 @@ template <typename TenT> struct sparse_values {
   tcapi::shape_t<TenT> shape;
   std::vector<std::pair<tcapi::elem_coors_t<TenT>, double>> entries;
 
-  std::complex<double> operator()(const tcapi::elem_coors_t<TenT> &coors) const {
+  std::complex<double>
+  operator()(const tcapi::elem_coors_t<TenT> &coors) const {
     for (const auto &entry : entries) {
       if (entry.first == coors) {
         return {entry.second, 0.0};
@@ -1866,11 +1923,12 @@ template <typename TenT> struct sparse_values {
 template <typename TenT> struct dense_values {
   tcapi::shape_t<TenT> shape;
 
-  std::complex<double> operator()(const tcapi::elem_coors_t<TenT> &coors) const {
+  std::complex<double>
+  operator()(const tcapi::elem_coors_t<TenT> &coors) const {
     const auto p = static_cast<long>(ramp_over<TenT>(shape, 0.0)(coors));
     const double re = static_cast<double>((7 * p) % 11 + 1);
-    const double im = is_complex_v<TenT> ? static_cast<double>((5 * p) % 7 - 3)
-                                         : 0.0;
+    const double im =
+        is_complex_v<TenT> ? static_cast<double>((5 * p) % 7 - 3) : 0.0;
     return {re, im};
   }
 
@@ -1975,7 +2033,8 @@ void expect_product(tcapi_test_fixture<TenT> &fix, const TenT &left,
   const auto rows = bond_labels(0, k);
   const auto cols = bond_labels(k, in_shape.size() - k);
   TenT product;
-  tcapi::contract(ctx, left, rows + "x", right, "x" + cols, product, rows + cols);
+  tcapi::contract(ctx, left, rows + "x", right, "x" + cols, product,
+                  rows + cols);
   TCAPICT_EXPECT_ELEMS(fix, product, in_shape, value_at,
                        tol_category::factorization);
 }
@@ -1996,11 +2055,11 @@ void check_svd(tcapi_test_fixture<TenT> &fix, const TenT &input, std::size_t k,
   const auto [u_shape, v_shape] = factor_shapes<TenT>(in_shape, k);
   const auto order = in_shape.size();
   const auto bond = u_shape.back();
-  TCAPICT_ASSERT_MSG(singular_values.empty() ||
-                         singular_values.size() == static_cast<std::size_t>(bond),
-                     "check_svd: " + std::to_string(singular_values.size()) +
-                         " singular_values for a factor bond of " +
-                         std::to_string(bond));
+  TCAPICT_ASSERT_MSG(
+      singular_values.empty() ||
+          singular_values.size() == static_cast<std::size_t>(bond),
+      "check_svd: " + std::to_string(singular_values.size()) +
+          " singular_values for a factor bond of " + std::to_string(bond));
 
   TenT u, v_dag;
   RealTenT sigma;
@@ -2026,15 +2085,16 @@ void check_svd(tcapi_test_fixture<TenT> &fix, const TenT &input, std::size_t k,
 
   // u with each element on factor-bond coordinate j scaled by sigma's {j, j}.
   auto u_scaled = tcapi::copy(ctx, u);
-  detail::for_each_coors<TenT>(u_shape, [&](const tcapi::elem_coors_t<TenT> &c) {
-    const auto j = c.back();
-    const auto s = real_part<RealTenT>(
-        tcapi::get_elem(ctx, sigma, coors_of<RealTenT>(j, j)));
-    const auto e = tcapi::get_elem(ctx, u, c);
-    tcapi::set_elem(ctx, u_scaled, c,
-                    make_elem<TenT>(real_part<TenT>(e) * s,
-                                    imag_part<TenT>(e) * s));
-  });
+  detail::for_each_coors<TenT>(
+      u_shape, [&](const tcapi::elem_coors_t<TenT> &c) {
+        const auto j = c.back();
+        const auto s = real_part<RealTenT>(
+            tcapi::get_elem(ctx, sigma, coors_of<RealTenT>(j, j)));
+        const auto e = tcapi::get_elem(ctx, u, c);
+        tcapi::set_elem(
+            ctx, u_scaled, c,
+            make_elem<TenT>(real_part<TenT>(e) * s, imag_part<TenT>(e) * s));
+      });
   expect_product(fix, u_scaled, v_dag, k, in_shape, value_at);
 
   expect_orthonormal_columns(fix, u, k);
@@ -2060,9 +2120,8 @@ void check_qr(tcapi_test_fixture<TenT> &fix, const TenT &input, std::size_t k,
   expect_product(fix, q, r, k, in_shape, value_at);
   expect_orthonormal_columns(fix, q, k);
   if (r_shape.size() == 2) {
-    expect_zero_where(fix, r, [](std::size_t row, std::size_t col) {
-      return row > col;
-    });
+    expect_zero_where(
+        fix, r, [](std::size_t row, std::size_t col) { return row > col; });
   }
 }
 #endif
@@ -2086,9 +2145,8 @@ void check_lq(tcapi_test_fixture<TenT> &fix, const TenT &input, std::size_t k,
   expect_product(fix, l, q, k, in_shape, value_at);
   expect_orthonormal_rows(fix, q, order - k);
   if (l_shape.size() == 2) {
-    expect_zero_where(fix, l, [](std::size_t row, std::size_t col) {
-      return col > row;
-    });
+    expect_zero_where(
+        fix, l, [](std::size_t row, std::size_t col) { return col > row; });
   }
 }
 #endif
@@ -2152,7 +2210,8 @@ void on_dense_third_order(tcapi_test_fixture<TenT> &fix, Check check) {
 
 // --- svd: non-square matrices ---
 
-template <typename TenT> void test_svd_non_square(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_svd_non_square(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK) &&       \
     defined(TCAPICT_HAS_ELEM_SWEEP)
 #ifdef TCAPICT_SKIP_SVD_SINGLE_PRECISION
@@ -2197,7 +2256,8 @@ void test_svd_higher_order(tcapi_test_fixture<TenT> &fix) {
 
 // --- qr: non-square matrices ---
 
-template <typename TenT> void test_qr_non_square(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_qr_non_square(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_QR) && defined(TCAPICT_HAS_ELEM_SWEEP)
 #ifdef TCAPICT_SKIP_QR_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
@@ -2229,7 +2289,8 @@ void test_qr_higher_order(tcapi_test_fixture<TenT> &fix) {
 
 // --- lq: non-square matrices ---
 
-template <typename TenT> void test_lq_non_square(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_lq_non_square(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_LQ) && defined(TCAPICT_HAS_ELEM_SWEEP)
 #ifdef TCAPICT_SKIP_LQ_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
@@ -2330,12 +2391,12 @@ void test_eigvalsh_diagonal(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_ASSERT(tcapi::size(ctx, eigenvalues) == 3);
 
   using RealTenT = tcapi::real_ten_t<TenT>;
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {0})),
-                       1.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {1})),
-                       2.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {2})),
-                       3.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {0})), 1.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {1})), 2.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {2})), 3.0, tol);
 #else
   (void)fix;
 #endif
@@ -2406,10 +2467,10 @@ void test_eigvalsh_ascending(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_ASSERT(tcapi::order(ctx, eigenvalues) == 1);
   TCAPICT_ASSERT(tcapi::size(ctx, eigenvalues) == 2);
   using RealTenT = tcapi::real_ten_t<TenT>;
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {0})),
-                       1.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {1})),
-                       3.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {0})), 1.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, eigenvalues, {1})), 3.0, tol);
 #else
   (void)fix;
 #endif
@@ -2420,62 +2481,65 @@ void test_eigvalsh_ascending(tcapi_test_fixture<TenT> &fix) {
 
 // Bulk registration helper: invokes X(..., "category", test_fn) once per test.
 // See include/tcapict/adapters/doctest.h for usage.
-#define TCAPICT_FOREACH_LINEAR_ALGEBRA_TEST_ALL_TYPES(X, ...) \
-  X(__VA_ARGS__, "linear_algebra", test_norm_identity) \
-  X(__VA_ARGS__, "linear_algebra", test_linear_combine_uniform) \
-  X(__VA_ARGS__, "linear_algebra", test_linear_combine_weighted) \
-  X(__VA_ARGS__, "linear_algebra", test_linear_combine_single) \
-  X(__VA_ARGS__, "linear_algebra", test_linear_combine_zeroth_order) \
-  X(__VA_ARGS__, "linear_algebra", test_normalize_inplace) \
-  X(__VA_ARGS__, "linear_algebra", test_normalize_outofplace) \
-  X(__VA_ARGS__, "linear_algebra", test_normalize_edge_cases) \
-  X(__VA_ARGS__, "linear_algebra", test_normalize_zeroth_order) \
-  X(__VA_ARGS__, "linear_algebra", test_norm_2x2) \
-  X(__VA_ARGS__, "linear_algebra", test_norm_zeroth_order) \
-  X(__VA_ARGS__, "linear_algebra", test_contract_matmul) \
-  X(__VA_ARGS__, "linear_algebra", test_contract_dot_product) \
-  X(__VA_ARGS__, "linear_algebra", test_contract_dot_product_int_labels) \
-  X(__VA_ARGS__, "linear_algebra", test_contract_zeroth_order) \
-  X(__VA_ARGS__, "linear_algebra", test_contract_outer_product) \
-  X(__VA_ARGS__, "linear_algebra", test_qr) \
-  X(__VA_ARGS__, "linear_algebra", test_lq) \
-  X(__VA_ARGS__, "linear_algebra", test_qr_non_square) \
-  X(__VA_ARGS__, "linear_algebra", test_qr_higher_order) \
-  X(__VA_ARGS__, "linear_algebra", test_lq_non_square) \
-  X(__VA_ARGS__, "linear_algebra", test_lq_higher_order) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_value) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_no_truncation) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_bounded) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_non_diagonal_input) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_selects_chi) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_scale_invariant) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_chi_min_floor) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_chi_max_cap) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_zero_matches_chi_max_overload) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_chi_min_not_restored_below_s_min) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_boundary_is_inclusive) \
-  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_argument_order) \
-  X(__VA_ARGS__, "linear_algebra", test_eig_identity) \
-  X(__VA_ARGS__, "linear_algebra", test_eig_distinct) \
-  X(__VA_ARGS__, "linear_algebra", test_eigh_identity) \
-  X(__VA_ARGS__, "linear_algebra", test_eigh_ascending) \
-  X(__VA_ARGS__, "linear_algebra", test_exp_identity) \
-  X(__VA_ARGS__, "linear_algebra", test_exp_diagonal) \
-  X(__VA_ARGS__, "linear_algebra", test_exp_zero) \
-  X(__VA_ARGS__, "linear_algebra", test_exp_anti_hermitian) \
-  X(__VA_ARGS__, "linear_algebra", test_inverse) \
-  X(__VA_ARGS__, "linear_algebra", test_scale_inplace) \
-  X(__VA_ARGS__, "linear_algebra", test_scale_outofplace) \
-  X(__VA_ARGS__, "linear_algebra", test_scale_by_zero) \
-  X(__VA_ARGS__, "linear_algebra", test_scale_zeroth_order) \
-  X(__VA_ARGS__, "linear_algebra", test_trace_partial) \
-  X(__VA_ARGS__, "linear_algebra", test_trace_leaving_bond) \
-  X(__VA_ARGS__, "linear_algebra", test_svd_basic) \
-  X(__VA_ARGS__, "linear_algebra", test_svd_reconstruction) \
-  X(__VA_ARGS__, "linear_algebra", test_svd_non_square) \
-  X(__VA_ARGS__, "linear_algebra", test_svd_higher_order) \
-  X(__VA_ARGS__, "linear_algebra", test_eigvals_diagonal) \
-  X(__VA_ARGS__, "linear_algebra", test_eigvals_distinct) \
-  X(__VA_ARGS__, "linear_algebra", test_eigvalsh_diagonal) \
+#define TCAPICT_FOREACH_LINEAR_ALGEBRA_TEST_ALL_TYPES(X, ...)                  \
+  X(__VA_ARGS__, "linear_algebra", test_norm_identity)                         \
+  X(__VA_ARGS__, "linear_algebra", test_linear_combine_uniform)                \
+  X(__VA_ARGS__, "linear_algebra", test_linear_combine_weighted)               \
+  X(__VA_ARGS__, "linear_algebra", test_linear_combine_single)                 \
+  X(__VA_ARGS__, "linear_algebra", test_linear_combine_zeroth_order)           \
+  X(__VA_ARGS__, "linear_algebra", test_normalize_inplace)                     \
+  X(__VA_ARGS__, "linear_algebra", test_normalize_outofplace)                  \
+  X(__VA_ARGS__, "linear_algebra", test_normalize_edge_cases)                  \
+  X(__VA_ARGS__, "linear_algebra", test_normalize_zeroth_order)                \
+  X(__VA_ARGS__, "linear_algebra", test_norm_2x2)                              \
+  X(__VA_ARGS__, "linear_algebra", test_norm_zeroth_order)                     \
+  X(__VA_ARGS__, "linear_algebra", test_contract_matmul)                       \
+  X(__VA_ARGS__, "linear_algebra", test_contract_dot_product)                  \
+  X(__VA_ARGS__, "linear_algebra", test_contract_dot_product_int_labels)       \
+  X(__VA_ARGS__, "linear_algebra", test_contract_zeroth_order)                 \
+  X(__VA_ARGS__, "linear_algebra", test_contract_outer_product)                \
+  X(__VA_ARGS__, "linear_algebra", test_qr)                                    \
+  X(__VA_ARGS__, "linear_algebra", test_lq)                                    \
+  X(__VA_ARGS__, "linear_algebra", test_qr_non_square)                         \
+  X(__VA_ARGS__, "linear_algebra", test_qr_higher_order)                       \
+  X(__VA_ARGS__, "linear_algebra", test_lq_non_square)                         \
+  X(__VA_ARGS__, "linear_algebra", test_lq_higher_order)                       \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd)                             \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_value)             \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_no_truncation)     \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_bounded)           \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_non_diagonal_input)          \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_selects_chi)      \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_scale_invariant)  \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_chi_min_floor)    \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_target_err_chi_max_cap)      \
+  X(__VA_ARGS__, "linear_algebra",                                             \
+    test_trunc_svd_target_err_zero_matches_chi_max_overload)                   \
+  X(__VA_ARGS__, "linear_algebra",                                             \
+    test_trunc_svd_chi_min_not_restored_below_s_min)                           \
+  X(__VA_ARGS__, "linear_algebra",                                             \
+    test_trunc_svd_target_err_boundary_is_inclusive)                           \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_argument_order)              \
+  X(__VA_ARGS__, "linear_algebra", test_eig_identity)                          \
+  X(__VA_ARGS__, "linear_algebra", test_eig_distinct)                          \
+  X(__VA_ARGS__, "linear_algebra", test_eigh_identity)                         \
+  X(__VA_ARGS__, "linear_algebra", test_eigh_ascending)                        \
+  X(__VA_ARGS__, "linear_algebra", test_exp_identity)                          \
+  X(__VA_ARGS__, "linear_algebra", test_exp_diagonal)                          \
+  X(__VA_ARGS__, "linear_algebra", test_exp_zero)                              \
+  X(__VA_ARGS__, "linear_algebra", test_exp_anti_hermitian)                    \
+  X(__VA_ARGS__, "linear_algebra", test_inverse)                               \
+  X(__VA_ARGS__, "linear_algebra", test_scale_inplace)                         \
+  X(__VA_ARGS__, "linear_algebra", test_scale_outofplace)                      \
+  X(__VA_ARGS__, "linear_algebra", test_scale_by_zero)                         \
+  X(__VA_ARGS__, "linear_algebra", test_scale_zeroth_order)                    \
+  X(__VA_ARGS__, "linear_algebra", test_trace_partial)                         \
+  X(__VA_ARGS__, "linear_algebra", test_trace_leaving_bond)                    \
+  X(__VA_ARGS__, "linear_algebra", test_svd_basic)                             \
+  X(__VA_ARGS__, "linear_algebra", test_svd_reconstruction)                    \
+  X(__VA_ARGS__, "linear_algebra", test_svd_non_square)                        \
+  X(__VA_ARGS__, "linear_algebra", test_svd_higher_order)                      \
+  X(__VA_ARGS__, "linear_algebra", test_eigvals_diagonal)                      \
+  X(__VA_ARGS__, "linear_algebra", test_eigvals_distinct)                      \
+  X(__VA_ARGS__, "linear_algebra", test_eigvalsh_diagonal)                     \
   X(__VA_ARGS__, "linear_algebra", test_eigvalsh_ascending)

@@ -11,6 +11,24 @@ This repository's deliverable is the test suite, so the type is judged against t
 
 `test` is not used: every change here touches tests, so the type would tell a reader nothing.
 
+## Formatting
+
+C and C++ files are formatted by clang-format in LLVM style as adjusted by `.clang-format`, and Markdown files by mdformat.
+Shell scripts are checked by shellcheck.
+[pre-commit](https://pre-commit.com/) ([installation](https://pre-commit.com/#install)) runs these, along with checks for trailing whitespace, missing final newlines, YAML syntax and leftover merge-conflict markers, on every commit once the hook is installed:
+
+```sh
+pre-commit install
+```
+
+To format every file at once:
+
+```sh
+pre-commit run --all-files
+```
+
+Tool versions are pinned in `.pre-commit-config.yaml`.
+
 ## Local integration check with the cytnx backend
 
 `make integration-check` verifies the current tcapict HEAD against the [cytnx
@@ -80,7 +98,7 @@ INTEGRATION_CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/macos-homebrew.c
 ### Environment variables
 
 | Variable | Default | Effect |
-|---|---|---|
+| -- | -- | -- |
 | `CYTNX_BACKEND_DIR` | `./build/tcapi-backend-cytnx` | cytnx checkout to override into; **set** disables auto-clone/sync |
 | `CYTNX_REPO_URL` | `https://github.com/r-ccs-cms/tcapi-backend-cytnx.git` | URL used only when auto-cloning the default path |
 | `CYTNX_REF` | `origin/main` | ref the default-path checkout is reset to on every run; it must provide the TCAPI V1 signatures this suite calls, such as `concatenate`, `stack` and `linear_combine` over `List<CRef<TenT>>` |

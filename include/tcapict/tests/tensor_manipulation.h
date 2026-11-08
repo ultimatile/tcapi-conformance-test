@@ -20,7 +20,8 @@ namespace tests {
 
 // --- shrink (in-place) ---
 
-template <typename TenT> void test_shrink_inplace(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_shrink_inplace(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_SHRINK
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::elementwise);
@@ -47,14 +48,14 @@ template <typename TenT> void test_shrink_inplace(tcapi_test_fixture<TenT> &fix)
   auto result_shape = tcapi::shape(ctx, tensor);
   TCAPICT_ASSERT(result_shape[0] == 2);
   TCAPICT_ASSERT(result_shape[1] == 2);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 1.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})), 2.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})), 4.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})), 5.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       1.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})),
+                       2.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})),
+                       4.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})),
+                       5.0, tol);
 #else
   (void)fix;
 #endif
@@ -87,14 +88,14 @@ void test_shrink_outofplace(tcapi_test_fixture<TenT> &fix) {
   auto result_shape = tcapi::shape(ctx, output);
   TCAPICT_ASSERT(result_shape[0] == 2);
   TCAPICT_ASSERT(result_shape[1] == 2);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})), 11.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 1})), 12.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 0})), 21.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})), 22.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})),
+                       11.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 1})),
+                       12.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 0})),
+                       21.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})),
+                       22.0, tol);
 #else
   (void)fix;
 #endif
@@ -209,8 +210,8 @@ void test_real_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 
   using RealTenT = tcapi::real_ten_t<TenT>;
   TCAPICT_EXPECT_ZEROTH_ORDER_SHAPE(ctx, real_tensor);
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, real_tensor, {})),
-                       4.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, real_tensor, {})), 4.0, tol);
 
   // TCAPI V1: "If `tcapi::elem_t<TenT>` is already real, this function returns
   // a deep copy of `in`", so for a real TenT a write to the input afterwards
@@ -239,8 +240,9 @@ void test_imag_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   // real one, whose imag is a zero tensor.
   using RealTenT = tcapi::real_ten_t<TenT>;
   TCAPICT_EXPECT_ZEROTH_ORDER_SHAPE(ctx, imag_tensor);
-  TCAPICT_ASSERT_CLOSE(real_part<RealTenT>(tcapi::get_elem(ctx, imag_tensor, {})),
-                       written<TenT>(4.0).imag(), tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<RealTenT>(tcapi::get_elem(ctx, imag_tensor, {})),
+      written<TenT>(4.0).imag(), tol);
 #else
   (void)fix;
 #endif
@@ -263,23 +265,23 @@ void test_cplx_conj_inplace(tcapi_test_fixture<TenT> &fix) {
 
   // Real parts unchanged for both real and complex: of a real TenT TCAPI V1
   // says "(1) performs no change". Imaginary parts only exist for complex.
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 1.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})), -3.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})), 5.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})), -7.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       1.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})),
+                       -3.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})),
+                       5.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})),
+                       -7.0, tol);
   if constexpr (is_complex_v<TenT>) {
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), -2.0,
-                         tol);
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})), -4.0,
-                         tol);
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})), 6.0,
-                         tol);
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})), 8.0,
-                         tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                         -2.0, tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 1})),
+                         -4.0, tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 0})),
+                         6.0, tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 1})),
+                         8.0, tol);
   }
 #else
   (void)fix;
@@ -303,19 +305,19 @@ void test_cplx_conj_outofplace(tcapi_test_fixture<TenT> &fix) {
   // Real parts hold for both real and complex: of a real TenT TCAPI V1 says
   // "(2) produces a deep copy". Imaginary parts only exist for complex. `input`
   // is read back at {0, 0}; see "Out-of-place inputs" in CONTRIBUTING.md.
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, input, {0, 0})), 3.14,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})), 3.14,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})), -1.41,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, input, {0, 0})),
+                       3.14, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})),
+                       3.14, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})),
+                       -1.41, tol);
   if constexpr (is_complex_v<TenT>) {
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, input, {0, 0})), 2.71,
-                         tol);
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})), -2.71,
-                         tol);
-    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})), 1.73,
-                         tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, input, {0, 0})),
+                         2.71, tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, output, {0, 0})),
+                         -2.71, tol);
+    TCAPICT_ASSERT_CLOSE(imag_part<TenT>(tcapi::get_elem(ctx, output, {1, 1})),
+                         1.73, tol);
   }
 #else
   (void)fix;
@@ -333,7 +335,8 @@ void test_cplx_conj_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   auto tensor = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, tensor, 2.0);
   tcapi::cplx_conj(ctx, tensor);
-  TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, conj_of(2.0), tol_category::elementwise);
+  TCAPICT_EXPECT_ZEROTH_ORDER(fix, tensor, conj_of(2.0),
+                              tol_category::elementwise);
 
   // Out of place; the input is read back, see "Out-of-place inputs" in
   // CONTRIBUTING.md.
@@ -341,7 +344,8 @@ void test_cplx_conj_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_SET_ZEROTH_ORDER(fix, input, -3.0);
   TenT output;
   tcapi::cplx_conj(ctx, input, output);
-  TCAPICT_EXPECT_ZEROTH_ORDER(fix, output, conj_of(-3.0), tol_category::elementwise);
+  TCAPICT_EXPECT_ZEROTH_ORDER(fix, output, conj_of(-3.0),
+                              tol_category::elementwise);
   TCAPICT_EXPECT_ZEROTH_ORDER(fix, input, -3.0);
 
   // TCAPI V1: "If `tcapi::elem_t<TenT>` is real, (1) performs no change and (2)
@@ -349,7 +353,8 @@ void test_cplx_conj_zeroth_order(tcapi_test_fixture<TenT> &fix) {
   // leaves the output of the out-of-place overload (2) as it was.
   if constexpr (!is_complex_v<TenT>) {
     TCAPICT_SET_ZEROTH_ORDER(fix, input, 5.0);
-    TCAPICT_EXPECT_ZEROTH_ORDER(fix, output, conj_of(-3.0), tol_category::elementwise);
+    TCAPICT_EXPECT_ZEROTH_ORDER(fix, output, conj_of(-3.0),
+                                tol_category::elementwise);
   }
 #else
   (void)fix;
@@ -476,12 +481,12 @@ void test_for_each_doubling(tcapi_test_fixture<TenT> &fix) {
   tcapi::for_each(ctx, tensor,
                   [](Elem &elem) { elem = elem * make_elem<TenT>(2.0); });
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})), 2.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 2})), 6.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 2})), 12.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 0})),
+                       2.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {0, 2})),
+                       6.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, tensor, {1, 2})),
+                       12.0, tol);
 #else
   (void)fix;
 #endif
@@ -543,7 +548,8 @@ void test_for_each_capture(tcapi_test_fixture<TenT> &fix) {
 
 // --- for_each: const version ---
 
-template <typename TenT> void test_for_each_const(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_for_each_const(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_FOR_EACH
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::reduction, 3);
@@ -716,7 +722,8 @@ void test_for_each_with_coors_const(tcapi_test_fixture<TenT> &fix) {
   Elem passed[2][2] = {};
   visit_record_2x2 visited;
   tcapi::for_each_with_coors(
-      ctx, const_a, [&](const Elem &elem, const tcapi::elem_coors_t<TenT> &coors) {
+      ctx, const_a,
+      [&](const Elem &elem, const tcapi::elem_coors_t<TenT> &coors) {
         std::ptrdiff_t row = 0;
         std::ptrdiff_t col = 0;
         if (!visited.record(coors, row, col)) {
@@ -748,7 +755,8 @@ void test_for_each_with_coors_const(tcapi_test_fixture<TenT> &fix) {
 // One visit, whose coordinate is the empty sequence.
 template <typename TenT>
 void test_for_each_with_coors_zeroth_order(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_FOR_EACH_WITH_COORS) && defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
+#if !defined(TCAPICT_SKIP_FOR_EACH_WITH_COORS) &&                              \
+    defined(TCAPICT_HAS_ZEROTH_ORDER_SWEEP)
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::elementwise);
   using Elem = tcapi::elem_t<TenT>;
@@ -966,7 +974,8 @@ void test_reshape_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 
   // From a tensor built at shape {1}.
   auto one = tcapi::zeros<TenT>(ctx, {1});
-  TCAPICT_SET_ELEMS(fix, one, [](const tcapi::elem_coors_t<TenT> &) { return 0.5; });
+  TCAPICT_SET_ELEMS(fix, one,
+                    [](const tcapi::elem_coors_t<TenT> &) { return 0.5; });
   TCAPICT_ASSERT_NOTHROW(tcapi::reshape(ctx, one, {}));
   TCAPICT_EXPECT_ZEROTH_ORDER(fix, one, 0.5);
 
@@ -1043,15 +1052,22 @@ void test_concatenate_basic(tcapi_test_fixture<TenT> &fix) {
 
   // Vertical concatenation: rows 0-1 from t1, rows 2-3 from t2
   auto vertical = TCAPICT_NOTHROW_VALUE(tcapi::concatenate<TenT>(ctx, ins, 0));
-  TCAPICT_EXPECT_ELEMS(fix, vertical, {4, 3}, [&](const auto &x) {
-    return x[0] < 2 ? t1_at(x) : t2_at(shifted(x, 0, 2));
-  }, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(
+      fix, vertical, {4, 3},
+      [&](const auto &x) {
+        return x[0] < 2 ? t1_at(x) : t2_at(shifted(x, 0, 2));
+      },
+      tol_category::exact);
 
   // Horizontal concatenation: columns 0-2 from t1, columns 3-5 from t2
-  auto horizontal = TCAPICT_NOTHROW_VALUE(tcapi::concatenate<TenT>(ctx, ins, 1));
-  TCAPICT_EXPECT_ELEMS(fix, horizontal, {2, 6}, [&](const auto &x) {
-    return x[1] < 3 ? t1_at(x) : t2_at(shifted(x, 1, 3));
-  }, tol_category::exact);
+  auto horizontal =
+      TCAPICT_NOTHROW_VALUE(tcapi::concatenate<TenT>(ctx, ins, 1));
+  TCAPICT_EXPECT_ELEMS(
+      fix, horizontal, {2, 6},
+      [&](const auto &x) {
+        return x[1] < 3 ? t1_at(x) : t2_at(shifted(x, 1, 3));
+      },
+      tol_category::exact);
 
   // Inputs unchanged; see "Inputs to multi-input operations" in
   // CONTRIBUTING.md.
@@ -1087,15 +1103,18 @@ void test_concatenate_values(tcapi_test_fixture<TenT> &fix) {
       ctx, {std::cref(a), std::cref(b), std::cref(c)}, 1));
 
   // Bond 1 of d: 0-2 from a, 3 from b, 4-5 from c
-  TCAPICT_EXPECT_ELEMS(fix, d, {2, 6, 4}, [&](const auto &x) {
-    if (x[1] < 3) {
-      return a_at(x);
-    }
-    if (x[1] < 4) {
-      return b_at(shifted(x, 1, 3));
-    }
-    return c_at(shifted(x, 1, 4));
-  }, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(
+      fix, d, {2, 6, 4},
+      [&](const auto &x) {
+        if (x[1] < 3) {
+          return a_at(x);
+        }
+        if (x[1] < 4) {
+          return b_at(shifted(x, 1, 3));
+        }
+        return c_at(shifted(x, 1, 4));
+      },
+      tol_category::exact);
 
   // Inputs unchanged; see "Inputs to multi-input operations" in
   // CONTRIBUTING.md.
@@ -1126,11 +1145,11 @@ template <typename TenT> void test_extract_sub(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_ASSERT(tcapi::shape(ctx, sub) == expected);
 
   // (1,0,0) in original maps to (0,0,0) in sub
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, sub, {0, 0, 0})), 42.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, sub, {0, 0, 0})),
+                       42.0, tol);
   // (2,1,1) in original maps to (1,1,1) in sub
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, sub, {1, 1, 1})), 13.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, sub, {1, 1, 1})),
+                       13.0, tol);
 #else
   (void)fix;
 #endif
@@ -1151,10 +1170,10 @@ void test_replace_sub_inplace(tcapi_test_fixture<TenT> &fix) {
   tcapi::elem_coors_t<TenT> begin_pt = {1, 2, 0};
   TCAPICT_ASSERT_NOTHROW(tcapi::replace_sub(ctx, a, sub, begin_pt));
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {1, 2, 0})), 42.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {2, 3, 1})), 13.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {1, 2, 0})),
+                       42.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {2, 3, 1})),
+                       13.0, tol);
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {0, 0, 0})), 0.0,
                        tol);
 #else
@@ -1178,13 +1197,14 @@ void test_replace_sub_outofplace(tcapi_test_fixture<TenT> &fix) {
   tcapi::elem_coors_t<TenT> begin_pt = {1, 1};
   TCAPICT_ASSERT_NOTHROW(tcapi::replace_sub(ctx, a, sub, begin_pt, result));
 
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})), 1.0,
-                       tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})), 99.0,
-                       tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {1, 1})),
+                       1.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, result, {0, 0})),
+                       99.0, tol);
   // The input is read back at {1, 1}; see "Out-of-place inputs" in
   // CONTRIBUTING.md.
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {1, 1})), 0.0, tol);
+  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, a, {1, 1})), 0.0,
+                       tol);
 #else
   (void)fix;
 #endif
@@ -1192,14 +1212,15 @@ void test_replace_sub_outofplace(tcapi_test_fixture<TenT> &fix) {
 
 // --- expand (in-place) ---
 
-template <typename TenT> void test_expand_inplace(tcapi_test_fixture<TenT> &fix) {
+template <typename TenT>
+void test_expand_inplace(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_EXPAND
   auto &ctx = fix.context();
   auto tol = tolerance(fix, tol_category::elementwise);
   auto a = tcapi::zeros<TenT>(ctx, {2, 2, 2});
 
-  tcapi::Map<tcapi::bond_idx_t<TenT>, tcapi::bond_dim_t<TenT>> bond_map = {{1, 2},
-                                                                           {0, 1}};
+  tcapi::Map<tcapi::bond_idx_t<TenT>, tcapi::bond_dim_t<TenT>> bond_map = {
+      {1, 2}, {0, 1}};
   TCAPICT_ASSERT_NOTHROW(tcapi::expand(ctx, a, bond_map));
 
   tcapi::shape_t<TenT> expected = {3, 4, 2};
@@ -1222,17 +1243,17 @@ void test_expand_outofplace(tcapi_test_fixture<TenT> &fix) {
   auto a = tcapi::zeros<TenT>(ctx, {2, 2, 2});
   tcapi::set_elem(ctx, a, {1, 1, 1}, make_elem<TenT>(5.0));
 
-  tcapi::Map<tcapi::bond_idx_t<TenT>, tcapi::bond_dim_t<TenT>> bond_map = {{1, 2},
-                                                                           {0, 1}};
+  tcapi::Map<tcapi::bond_idx_t<TenT>, tcapi::bond_dim_t<TenT>> bond_map = {
+      {1, 2}, {0, 1}};
   TenT expanded;
   TCAPICT_ASSERT_NOTHROW(tcapi::expand(ctx, a, bond_map, expanded));
 
   tcapi::shape_t<TenT> expected = {3, 4, 2};
   TCAPICT_ASSERT(tcapi::shape(ctx, expanded) == expected);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, expanded, {1, 1, 1})),
-                       5.0, tol);
-  TCAPICT_ASSERT_CLOSE(real_part<TenT>(tcapi::get_elem(ctx, expanded, {2, 3, 0})),
-                       0.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<TenT>(tcapi::get_elem(ctx, expanded, {1, 1, 1})), 5.0, tol);
+  TCAPICT_ASSERT_CLOSE(
+      real_part<TenT>(tcapi::get_elem(ctx, expanded, {2, 3, 0})), 0.0, tol);
 #else
   (void)fix;
 #endif
@@ -1378,7 +1399,7 @@ void test_diag_mat_to_vec_from_diagonal(tcapi_test_fixture<TenT> &fix) {
 // tensor as a diagonal tensor", as TCAPI V1's own diag example does.
 template <typename TenT>
 void test_diag_mat_to_vec_from_eye(tcapi_test_fixture<TenT> &fix) {
-#if !defined(TCAPICT_SKIP_DIAG) && !defined(TCAPICT_SKIP_EYE) && \
+#if !defined(TCAPICT_SKIP_DIAG) && !defined(TCAPICT_SKIP_EYE) &&               \
     defined(TCAPICT_HAS_DIAGONAL_CHECK)
   auto &ctx = fix.context();
   auto identity = tcapi::eye<TenT>(ctx, 3);
@@ -1400,7 +1421,8 @@ void test_diag_vec_to_mat_outofplace(tcapi_test_fixture<TenT> &fix) {
 
   auto vector = tcapi::zeros<TenT>(ctx, {3});
   for (std::size_t i = 0; i < 3; ++i) {
-    tcapi::set_elem(ctx, vector, coors_of<TenT>(i), make_elem<TenT>(expected[i]));
+    tcapi::set_elem(ctx, vector, coors_of<TenT>(i),
+                    make_elem<TenT>(expected[i]));
   }
 
   TenT matrix;
@@ -1466,17 +1488,23 @@ template <typename TenT> void test_stack_basic(tcapi_test_fixture<TenT> &fix) {
   auto result = TCAPICT_NOTHROW_VALUE(tcapi::stack<TenT>(ctx, ins, 0));
 
   // The new bond 0 selects the input: slice 0 is t1, slice 1 is t2
-  TCAPICT_EXPECT_ELEMS(fix, result, {2, 2, 3}, [&](const auto &x) {
-    const auto y = without_bond(x, 0);
-    return x[0] == 0 ? t1_at(y) : t2_at(y);
-  }, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(
+      fix, result, {2, 2, 3},
+      [&](const auto &x) {
+        const auto y = without_bond(x, 0);
+        return x[0] == 0 ? t1_at(y) : t2_at(y);
+      },
+      tol_category::exact);
 
   // An interior bond: the new bond 1 selects the input
   auto interior = TCAPICT_NOTHROW_VALUE(tcapi::stack<TenT>(ctx, ins, 1));
-  TCAPICT_EXPECT_ELEMS(fix, interior, {2, 2, 3}, [&](const auto &x) {
-    const auto y = without_bond(x, 1);
-    return x[1] == 0 ? t1_at(y) : t2_at(y);
-  }, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(
+      fix, interior, {2, 2, 3},
+      [&](const auto &x) {
+        const auto y = without_bond(x, 1);
+        return x[1] == 0 ? t1_at(y) : t2_at(y);
+      },
+      tol_category::exact);
 
   // Inputs unchanged; see "Inputs to multi-input operations" in
   // CONTRIBUTING.md.
@@ -1506,20 +1534,23 @@ void test_stack_last_axis(tcapi_test_fixture<TenT> &fix) {
   TCAPICT_SET_ELEMS(fix, t2, t2_at);
   TCAPICT_SET_ELEMS(fix, t3, t3_at);
 
-  auto result = TCAPICT_NOTHROW_VALUE(
-      tcapi::stack<TenT>(ctx, {std::cref(t1), std::cref(t2), std::cref(t3)}, 2));
+  auto result = TCAPICT_NOTHROW_VALUE(tcapi::stack<TenT>(
+      ctx, {std::cref(t1), std::cref(t2), std::cref(t3)}, 2));
 
   // The new bond 2 selects the input
-  TCAPICT_EXPECT_ELEMS(fix, result, {2, 3, 3}, [&](const auto &x) {
-    const auto y = without_bond(x, 2);
-    if (x[2] == 0) {
-      return t1_at(y);
-    }
-    if (x[2] == 1) {
-      return t2_at(y);
-    }
-    return t3_at(y);
-  }, tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(
+      fix, result, {2, 3, 3},
+      [&](const auto &x) {
+        const auto y = without_bond(x, 2);
+        if (x[2] == 0) {
+          return t1_at(y);
+        }
+        if (x[2] == 1) {
+          return t2_at(y);
+        }
+        return t3_at(y);
+      },
+      tol_category::exact);
 
   // Inputs unchanged; see "Inputs to multi-input operations" in
   // CONTRIBUTING.md.
@@ -1538,53 +1569,53 @@ void test_stack_last_axis(tcapi_test_fixture<TenT> &fix) {
 // See include/tcapict/adapters/doctest.h for usage.
 //
 // ALL_TYPES: safe for both real and complex TenT.
-#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_ALL_TYPES(X, ...) \
-  X(__VA_ARGS__, "tensor_manipulation", test_shrink_inplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_shrink_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_shrink_complex_values) \
-  X(__VA_ARGS__, "tensor_manipulation", test_real_extraction) \
-  X(__VA_ARGS__, "tensor_manipulation", test_imag_extraction) \
-  X(__VA_ARGS__, "tensor_manipulation", test_real_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_imag_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_inplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_to_cplx_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_doubling) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_summation) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_capture) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_const) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_inversion) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_with_coors) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_with_coors_const) \
+#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_ALL_TYPES(X, ...)             \
+  X(__VA_ARGS__, "tensor_manipulation", test_shrink_inplace)                   \
+  X(__VA_ARGS__, "tensor_manipulation", test_shrink_outofplace)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_shrink_complex_values)            \
+  X(__VA_ARGS__, "tensor_manipulation", test_real_extraction)                  \
+  X(__VA_ARGS__, "tensor_manipulation", test_imag_extraction)                  \
+  X(__VA_ARGS__, "tensor_manipulation", test_real_zeroth_order)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_imag_zeroth_order)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_inplace)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_outofplace)             \
+  X(__VA_ARGS__, "tensor_manipulation", test_cplx_conj_zeroth_order)           \
+  X(__VA_ARGS__, "tensor_manipulation", test_to_cplx_zeroth_order)             \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_doubling)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_summation)               \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_capture)                 \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_const)                   \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_inversion)               \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_zeroth_order)            \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_with_coors)              \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_with_coors_const)        \
   X(__VA_ARGS__, "tensor_manipulation", test_for_each_with_coors_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_for_each_eye_traversal) \
-  X(__VA_ARGS__, "tensor_manipulation", test_reshape) \
-  X(__VA_ARGS__, "tensor_manipulation", test_reshape_zeroth_order) \
-  X(__VA_ARGS__, "tensor_manipulation", test_transpose) \
-  X(__VA_ARGS__, "tensor_manipulation", test_concatenate_basic) \
-  X(__VA_ARGS__, "tensor_manipulation", test_concatenate_values) \
-  X(__VA_ARGS__, "tensor_manipulation", test_extract_sub) \
-  X(__VA_ARGS__, "tensor_manipulation", test_replace_sub_inplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_replace_sub_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_expand_inplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_expand_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_vec_to_mat) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_from_diagonal) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_from_eye) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_vec_to_mat_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_outofplace) \
-  X(__VA_ARGS__, "tensor_manipulation", test_stack_basic) \
+  X(__VA_ARGS__, "tensor_manipulation", test_for_each_eye_traversal)           \
+  X(__VA_ARGS__, "tensor_manipulation", test_reshape)                          \
+  X(__VA_ARGS__, "tensor_manipulation", test_reshape_zeroth_order)             \
+  X(__VA_ARGS__, "tensor_manipulation", test_transpose)                        \
+  X(__VA_ARGS__, "tensor_manipulation", test_concatenate_basic)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_concatenate_values)               \
+  X(__VA_ARGS__, "tensor_manipulation", test_extract_sub)                      \
+  X(__VA_ARGS__, "tensor_manipulation", test_replace_sub_inplace)              \
+  X(__VA_ARGS__, "tensor_manipulation", test_replace_sub_outofplace)           \
+  X(__VA_ARGS__, "tensor_manipulation", test_expand_inplace)                   \
+  X(__VA_ARGS__, "tensor_manipulation", test_expand_outofplace)                \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_vec_to_mat)                  \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec)                  \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_from_diagonal)    \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_from_eye)         \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_vec_to_mat_outofplace)       \
+  X(__VA_ARGS__, "tensor_manipulation", test_diag_mat_to_vec_outofplace)       \
+  X(__VA_ARGS__, "tensor_manipulation", test_stack_basic)                      \
   X(__VA_ARGS__, "tensor_manipulation", test_stack_last_axis)
 
 // REAL_ONLY: the test lifts a real tensor to complex and checks the zero
 //   imaginary parts it gains, so it takes only a real TenT.
-#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_REAL_ONLY(X, ...) \
+#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_REAL_ONLY(X, ...)             \
   X(__VA_ARGS__, "tensor_manipulation", test_to_cplx_outofplace)
 
 // CPLX_ONLY: body is wrapped in `if constexpr (is_complex_v<TenT>)`; running
 //   for real TenT would be a no-op, so skip registration.
-#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_CPLX_ONLY(X, ...) \
+#define TCAPICT_FOREACH_TENSOR_MANIPULATION_TEST_CPLX_ONLY(X, ...)             \
   X(__VA_ARGS__, "tensor_manipulation", test_to_cplx_complex_to_complex)

@@ -120,8 +120,8 @@ template <typename TenT> tcapi::elem_t<TenT> written_elem(double v) {
 /// Sets the element at every coordinate `coors` of `tensor` to the value with
 /// real part `v = value_at(coors)` and, for a complex element type, imaginary
 /// part `-0.5 * v`, so that an operation losing or conjugating imaginary parts
-/// is visible. Pairs with `TCAPICT_EXPECT_ELEMS`, so a test can build an input and
-/// check it with the same function; real-coefficient linear operations keep
+/// is visible. Pairs with `TCAPICT_EXPECT_ELEMS`, so a test can build an input
+/// and check it with the same function; real-coefficient linear operations keep
 /// the imaginary part at `-0.5` times the real part. A std::exception from
 /// shape, set_elem or `value_at`, an assertion failing in `value_at` included,
 /// is reported at `file`:`line` as detail::nothrow_call reports it; call it
@@ -136,8 +136,8 @@ void set_elems_at(const char *file, int line, tcapi_test_fixture<TenT> &fix,
       shape, [&](const tcapi::elem_coors_t<TenT> &coors) {
         const auto elem = written_elem<TenT>(static_cast<double>(
             detail::nothrow_call(file, line, [&] { return value_at(coors); })));
-        detail::nothrow_call(file, line,
-                             [&] { tcapi::set_elem(ctx, tensor, coors, elem); });
+        detail::nothrow_call(
+            file, line, [&] { tcapi::set_elem(ctx, tensor, coors, elem); });
       });
 }
 
@@ -147,8 +147,8 @@ void set_elems_at(const char *file, int line, tcapi_test_fixture<TenT> &fix,
 /// `tol_category::exact` gives, admits only equality, and any other tolerance
 /// admits only a difference below it. A real
 /// `value_at` result `v` stands for `written<TenT>(v)`, the value
-/// `TCAPICT_SET_ELEMS` writes; a `std::complex<double>` result is compared as it
-/// is. For a real element type, the expected imaginary part is compared
+/// `TCAPICT_SET_ELEMS` writes; a `std::complex<double>` result is compared as
+/// it is. For a real element type, the expected imaginary part is compared
 /// against zero. The
 /// shape is asserted first, so the sweep reads only coordinates the tensor has.
 /// A shape or element mismatch is reported at `file`:`line`. So is a
@@ -223,9 +223,11 @@ void expect_elems_at(const char *file, int line, tcapi_test_fixture<TenT> &fix,
 /// TCAPICT_EXPECT_ELEMS(fix, tensor, shape, value_at[, cat[, n]]). The line is
 /// one of the lines the invocation spans; which one, for an invocation spanning
 /// several, depends on the compiler.
-#define TCAPICT_EXPECT_ELEMS(...) ::tcapict::expect_elems_at(__FILE__, __LINE__, __VA_ARGS__)
+#define TCAPICT_EXPECT_ELEMS(...)                                              \
+  ::tcapict::expect_elems_at(__FILE__, __LINE__, __VA_ARGS__)
 
 /// set_elems_at with the caller's file and line:
 /// TCAPICT_SET_ELEMS(fix, tensor, value_at), the line chosen as for
 /// TCAPICT_EXPECT_ELEMS.
-#define TCAPICT_SET_ELEMS(...) ::tcapict::set_elems_at(__FILE__, __LINE__, __VA_ARGS__)
+#define TCAPICT_SET_ELEMS(...)                                                 \
+  ::tcapict::set_elems_at(__FILE__, __LINE__, __VA_ARGS__)

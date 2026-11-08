@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+# LLVM style reflows comments past the column limit. A NOLINTNEXTLINE comment
+# split across two lines no longer precedes the code it suppresses, so comment
+# lines starting with NOLINT are not reflowed.
+CommentPragmas: '^ ?(IWYU pragma:|NOLINT)'

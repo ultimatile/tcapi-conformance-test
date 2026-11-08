@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v23.1.5
+    hooks:
+      - id: clang-format
+        types_or: [c++, c]
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+  # `--number` renumbers ordered lists, `--compact-tables` strips table-cell padding.
+  # `rev` pins only mdformat itself, and `pre-commit autoupdate` does not touch
+  # additional_dependencies, so bump the plugin's pin by hand.
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        args: [--number, --compact-tables]
+        additional_dependencies:
+          - mdformat-gfm==1.0.0

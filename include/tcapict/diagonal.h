@@ -71,15 +71,15 @@ void expect_diagonal_at(const char *file, int line, Ctx &ctx,
     return "{" + std::to_string(i) + ", " + std::to_string(j) + "}";
   };
 
-  const auto actual_order =
-      detail::nothrow_call(file, line, [&] { return tcapi::order(ctx, tensor); });
+  const auto actual_order = detail::nothrow_call(
+      file, line, [&] { return tcapi::order(ctx, tensor); });
   if (actual_order != 2) {
     std::ostringstream oss;
     oss << "order " << actual_order << " != expected 2";
     detail::fail_at(file, line, oss.str());
   }
-  const auto shape =
-      detail::nothrow_call(file, line, [&] { return tcapi::shape(ctx, tensor); });
+  const auto shape = detail::nothrow_call(
+      file, line, [&] { return tcapi::shape(ctx, tensor); });
   if (shape.size() != 2 || static_cast<std::size_t>(shape[0]) != n ||
       static_cast<std::size_t>(shape[1]) != n) {
     std::ostringstream oss;
@@ -90,8 +90,8 @@ void expect_diagonal_at(const char *file, int line, Ctx &ctx,
     oss << "} != expected {" << n << ", " << n << "}";
     detail::fail_at(file, line, oss.str());
   }
-  const auto size =
-      detail::nothrow_call(file, line, [&] { return tcapi::size(ctx, tensor); });
+  const auto size = detail::nothrow_call(
+      file, line, [&] { return tcapi::size(ctx, tensor); });
   if (static_cast<std::size_t>(size) != n * n) {
     std::ostringstream oss;
     oss << "size " << size << " != expected " << n * n;
@@ -174,8 +174,8 @@ void expect_diagonal_at(const char *file, int line, Ctx &ctx,
 template <typename Ctx, typename DiagT>
 std::vector<double> real_diagonal_of_at(const char *file, int line, Ctx &ctx,
                                         const DiagT &tensor) {
-  const auto shape =
-      detail::nothrow_call(file, line, [&] { return tcapi::shape(ctx, tensor); });
+  const auto shape = detail::nothrow_call(
+      file, line, [&] { return tcapi::shape(ctx, tensor); });
   if (shape.size() != 2 || shape[0] != shape[1]) {
     detail::fail_at(file, line,
                     "real_diagonal_of_at: not a square second-order tensor");
