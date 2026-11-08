@@ -29,6 +29,13 @@ pre-commit run --all-files
 
 Tool versions are pinned in `.pre-commit-config.yaml`.
 
+`.git-blame-ignore-revs` lists commits that reformat the suite.
+To have `git blame` skip them, run once:
+
+```sh
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
 ## Local integration check with the cytnx backend
 
 `make integration-check` verifies the current tcapict HEAD against the [cytnx
