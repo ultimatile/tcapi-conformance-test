@@ -3,13 +3,16 @@
 ## Commit messages
 
 Commit subjects follow [Conventional Commits](https://www.conventionalcommits.org/).
-This repository's deliverable is the test suite, so the type is judged against the suite, not against the backends it tests:
+This repository's deliverable is the test suite, so a change's type is judged by its effect on the suite: on what the tests assert, and on how the suite is built and run against a backend.
 
-- `feat`: new coverage, such as a new test case or a newly covered API, or new suite infrastructure, such as adapters, tolerance categories or skip macros.
-- `fix`: a test that asserts the wrong thing, including one that asserts behavior TCAPI V1 does not define, or any other bug in the suite.
-- `refactor`: a change to how tests are written that leaves what they assert unchanged.
+A change that leaves all code untouched except its comments, the code being the headers under `include/`, the `Makefile` and the scripts under `scripts/` that build and run the suite, takes `docs` when it changes only documentation, meaning Markdown files such as `README.md` or this one and comments in the code, and `chore` otherwise, as for a change to `LICENSE` or `.gitignore`.
+For any other change, the following types are read against its effect, and a change whose effect one of them describes takes that type:
 
-`test` is not used: every change here touches tests, so the type would tell a reader nothing.
+- `feat`: new coverage, such as a new test case or a newly covered API, or new suite infrastructure, such as adapters, tolerance categories, skip macros or the integration check.
+- `fix`: a test that asserts the wrong thing, including one that asserts behavior TCAPI V1 does not define, or any other bug in the suite or in how it is built or run.
+- `refactor`: any other change that leaves what the tests assert, and how the suite is built and run, unchanged, such as a reformat or a rename.
+
+`test` and `build` are not used: `test` would give one type to a new test and a corrected one, which `feat` and `fix` tell apart here, and a change to how the suite is built is typed by its effect like any other.
 
 ## Formatting
 
