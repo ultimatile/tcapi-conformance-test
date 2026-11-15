@@ -36,16 +36,19 @@ enum class diag_order {
 #if defined(TCAPICT_HAS_DIAGONAL_CHECK)
 
 /// Asserts that `tensor`, of any tensor type, is a diagonal tensor holding
-/// `expected` on its diagonal, with n = expected.size(): order 2, shape
-/// {n, n} and size n * n, checked in that order before any element is read,
-/// then every element. An off-diagonal element must be exactly zero in both
-/// parts. A diagonal element's real part must differ from the expected value
-/// by less than `tol`, or equal it when `tol` is zero, and its imaginary part,
-/// for a complex element type, must likewise be zero. `arrangement` says which
-/// diagonal element each expected value is compared with. A mismatch, or a
-/// std::exception from order, shape, size or get_elem, is reported at
-/// `file`:`line`. Call it through TCAPICT_EXPECT_DIAGONAL, which passes the
-/// caller's location.
+/// `expected` on its diagonal, with n = expected.size(). It takes any tensor
+/// type because the `sigma` of svd and of trunc_svd and the `lambda_mat` of
+/// eigh are real_ten_t<TenT>, and the `lambda_mat` of eig is cplx_ten_t<TenT>;
+/// `ctx` is the context the operation that produced `tensor` was called with.
+/// It checks order 2, shape {n, n} and size n * n, in that order before any
+/// element is read, then every element. An off-diagonal element must be exactly
+/// zero in both parts. A diagonal element's real part must differ from the
+/// expected value by less than `tol`, or equal it when `tol` is zero, and its
+/// imaginary part, for a complex element type, must likewise be zero.
+/// `arrangement` says which diagonal element each expected value is compared
+/// with. A mismatch, or a std::exception from order, shape, size or get_elem,
+/// is reported at `file`:`line`. Call it through TCAPICT_EXPECT_DIAGONAL, which
+/// passes the caller's location.
 template <typename Ctx, typename DiagT>
 void expect_diagonal_at(const char *file, int line, Ctx &ctx,
                         const DiagT &tensor,

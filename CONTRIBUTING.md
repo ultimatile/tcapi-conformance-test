@@ -3,13 +3,16 @@
 ## Commit messages
 
 Commit subjects follow [Conventional Commits](https://www.conventionalcommits.org/).
-This repository's deliverable is the test suite, so the type is judged against the suite, not against the backends it tests:
+This repository's deliverable is the test suite, so a change's type is judged by its effect on the suite: on what the tests assert, and on how the suite is built and run against a backend.
 
-- `feat`: new coverage, such as a new test case or a newly covered API, or new suite infrastructure, such as adapters, tolerance categories or skip macros.
-- `fix`: a test that asserts the wrong thing, including one that asserts behavior TCAPI V1 does not define, or any other bug in the suite.
-- `refactor`: a change to how tests are written that leaves what they assert unchanged.
+A change that leaves all code untouched except its comments, the code being the headers under `include/`, the `Makefile` and the scripts under `scripts/` that build and run the suite, takes `docs` when it changes only documentation, meaning Markdown files such as `README.md` or this one and comments in the code, and `chore` otherwise, as for a change to `LICENSE` or `.gitignore`.
+For any other change, the following types are read against its effect, and a change whose effect one of them describes takes that type:
 
-`test` is not used: every change here touches tests, so the type would tell a reader nothing.
+- `feat`: new coverage, such as a new test case or a newly covered API, or new suite infrastructure, such as adapters, tolerance categories, skip macros or the integration check.
+- `fix`: a test that asserts the wrong thing, including one that asserts behavior TCAPI V1 does not define, or any other bug in the suite or in how it is built or run.
+- `refactor`: any other change that leaves what the tests assert, and how the suite is built and run, unchanged, such as a reformat or a rename.
+
+`test` and `build` are not used: `test` would give one type to a new test and a corrected one, which `feat` and `fix` tell apart here, and a change to how the suite is built is typed by its effect like any other.
 
 ## Formatting
 
@@ -127,7 +130,7 @@ Each test reads every input back after its last call to the operation and assert
 That asserts the "not ... modified"; the read-back cannot detect a copy, so "not copied" is not asserted.
 An input whose elements all hold one value would pass that read-back even after being reordered in place, so each input element gets a value no other input element has.
 Each input other than a zeroth-order one is built from a coordinate-to-value function, through `TCAPICT_SET_ELEMS` in `include/tcapict/elem_sweep.h`, and both the read-back and the check of every element of the result are computed from the same functions, through `TCAPICT_EXPECT_ELEMS`; `ramp_over` there gives distinct values to distinct coordinates.
-A zeroth-order input has one element, which no reordering can move, so the test of `linear_combine` on zeroth-order inputs sets each input's element to a value the other input does not hold through `TCAPICT_SET_ZEROTH_ORDER`, and reads it back and checks the result through `TCAPICT_EXPECT_ZEROTH_ORDER`.
+A zeroth-order input has one element, which no reordering can move, so it needs only a value no other input holds; it is set through `TCAPICT_SET_ZEROTH_ORDER` in `include/tcapict/zeroth_order.h`, and read back, as is the result, through `TCAPICT_EXPECT_ZEROTH_ORDER`.
 
 Each of the three operations, and each `linear_combine` overload, is called at least once through a named `tcapi::List<tcapi::CRef<TenT>>` variable, not only through a braced `{std::cref(a), ...}` list.
 When `TenT` is copy-constructible, a braced list of `std::cref`s also initializes a `List<TenT>`, so a braced call alone compiles against a backend that still takes `List<TenT>`.
@@ -146,10 +149,7 @@ Tests call `to_range` and `assign_from_range` on second-order tensors through `t
 ### Zeroth-order tensors
 
 TCAPI V1, in the introduction to its core functions: "A zeroth-order tensor has empty shape, size 1, and a single empty coordinate sequence."
-Where a test knows the element a zeroth-order `TenT` should hold, it checks the tensor through `TCAPICT_EXPECT_ZEROTH_ORDER` in `include/tcapict/zeroth_order.h`: order 0, shape `{}` and size 1, then the sole element read at `{}` through `expect_elems_at` in `include/tcapict/elem_sweep.h`, unless it splits that check as `test_random_zeroth_order` below does.
-The results of `real` and `imag` of a complex tensor, and of `to_cplx` of a real one, have another tensor type; those results are checked through `TCAPICT_EXPECT_ZEROTH_ORDER_SHAPE`, which takes any tensor type, and `get_elem`.
-`test_random_zeroth_order` checks its result through `TCAPICT_EXPECT_ZEROTH_ORDER_SHAPE` before it asserts the generator's call count, and then the sole element through `TCAPICT_EXPECT_ELEMS`, so that a backend ignoring the empty shape is reported as such.
-A callback that receives a coordinate of a zeroth-order tensor expects the empty one and flags any other, under "Callbacks the backend invokes", through `to_range_0d`, `assign_from_range_0d` or `visit_record_0d` in the same header.
+A callback that receives a coordinate of a zeroth-order tensor expects the empty one and flags any other, under "Callbacks the backend invokes", through `to_range_0d`, `assign_from_range_0d` or `visit_record_0d` in `include/tcapict/zeroth_order.h`.
 
 TCAPI V1 goes on: "Operations whose definitions require selecting, reordering, inserting, removing, slicing, or partitioning existing bonds are not applicable to zeroth-order tensors unless explicitly specified by the operation."
 It names no such operation. The suite reads `transpose`, `svd`, `qr`, `eig`, `expand`, `shrink`, `extract_sub` and `replace_sub` as such operations, and none of their entries specifies a zeroth-order case.
@@ -165,10 +165,6 @@ Of `size_bytes` they assert only that it returns, as the tests of the other rank
 
 TCAPI V1, in the introduction to its core functions: "TCAPI treats a diagonal tensor as an ordinary second-order tensor with shape {N,N} whose off-diagonal logical tensor elements are zero." and "Unless stated otherwise, TCAPI operations are defined by logical tensor elements, not by storage representation."
 Its entries name these diagonal tensors: `eye` returns "the N×N identity tensor as a diagonal tensor", `diag` of a first-order input and the `sigma` of `trunc_svd` and `lambda_mat` of `eig` are each "a second-order diagonal tensor", and the `sigma` of `svd` and `lambda_mat` of `eigh` are each "a real second-order diagonal tensor".
-`test_diag_mat_to_vec_from_diagonal` checks every element of the diagonal tensor it builds with `diag`, its off-diagonal zeros included, through `TCAPICT_EXPECT_ELEMS` before extracting from it; `test_diag_mat_to_vec_from_eye` extracts from `eye` without checking that result, which `test_eye` checks.
-`test_eye` and the other tests of `diag`, `svd`, `trunc_svd`, `eig` and `eigh` check each diagonal tensor they produce as a result through `TCAPICT_EXPECT_DIAGONAL` in `include/tcapict/diagonal.h`: order 2, shape `{n, n}` and size `n * n`, checked before any element is read, then every element against the expected diagonal.
 Off-diagonal elements must be exactly zero, since TCAPI V1 defines a diagonal tensor as one "whose off-diagonal logical tensor elements are zero".
-The check takes any tensor type, with the context its input came with, because `sigma` and `eigh`'s `lambda_mat` are `real_ten_t<TenT>` and `eig`'s `lambda_mat` is `cplx_ten_t<TenT>`.
 TCAPI V1 fixes the order of the diagonal for `svd` ("non-increasing order") and for `eigh` ("ascending order").
-It states none for `eig`, nor for the `sigma` of `trunc_svd`, whose entry says that the routine "follows the same matricization and SVD convention as svd" and retains the singular values "in descending order" but states no order for the diagonal of its output `sigma`; so the `trunc_svd` tests, and the `eig` tests wherever the eigenvalues are not all equal, compare the diagonal as a multiset, through `diag_order::any`.
-`eigvals` and `eigvalsh` return first-order lists, and their tests assert order 1.
+It states none for `eig`, nor for the `sigma` of `trunc_svd`, whose entry says that the routine "follows the same matricization and SVD convention as svd" and retains the singular values "in descending order" but states no order for the diagonal of its output `sigma`; so the `trunc_svd` tests, and the `eig` tests wherever the eigenvalues are not all equal, compare the diagonal as a multiset, through `diag_order::any` in `include/tcapict/diagonal.h`.

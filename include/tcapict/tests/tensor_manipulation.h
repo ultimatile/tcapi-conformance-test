@@ -1396,7 +1396,8 @@ void test_diag_mat_to_vec_from_diagonal(tcapi_test_fixture<TenT> &fix) {
 // --- diag: matrix to vector, from eye ---
 
 // Extracts the diagonal of eye(3), whose entry returns "the N×N identity
-// tensor as a diagonal tensor", as TCAPI V1's own diag example does.
+// tensor as a diagonal tensor", as TCAPI V1's own diag example does. It does
+// not check eye's result, which test_eye checks.
 template <typename TenT>
 void test_diag_mat_to_vec_from_eye(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_DIAG) && !defined(TCAPICT_SKIP_EYE) &&               \
