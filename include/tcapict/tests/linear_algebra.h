@@ -656,6 +656,10 @@ constexpr bool trunc_svd_fixture_is_non_increasing_and_non_negative() {
 }
 static_assert(trunc_svd_fixture_is_non_increasing_and_non_negative(),
               "kTruncSvdFixtureSvs must be non-increasing and non-negative");
+// The overload (1) tests below also take every value to be positive, which
+// for a non-increasing table is its last value being positive.
+static_assert(kTruncSvdFixtureSvs[kTruncSvdFixtureRank - 1] > 0.0,
+              "kTruncSvdFixtureSvs must be positive");
 
 // Helper: the singular values trunc_svd retains at `chi` on the fixture matrix
 // built with `scale`, the first `chi` entries of the table, scaled.
@@ -730,6 +734,37 @@ tcapi::real_t<TenT> trunc_svd_expected_epsilon(int chi) {
                                                kTruncSvdFixtureRank, chi);
 }
 
+// Helper: run overload (1), (chi_max, s_min), on the fixture spectrum, and
+// assert sigma, which holds the retained singular values, and the truncation
+// error against TCAPI V1's epsilon for the expected chi.
+//
+// The overload (1) tests on this fixture that check nothing beyond those
+// differ in the two arguments and the expected chi alone, so the call and its
+// assertions live here once. trunc_svd_expect_retained_chi below checks sigma
+// and the truncation error through overload (2), which a backend may implement
+// apart from overload (1), so it cannot stand in for this one.
+template <typename TenT>
+void trunc_svd_chi_max_expect_retained_chi(tcapi_test_fixture<TenT> &fix,
+                                           int chi_max,
+                                           tcapi::real_t<TenT> s_min,
+                                           int expected_chi) {
+  auto &ctx = fix.context();
+  auto tol = tolerance(fix, tol_category::factorization);
+  auto matrix = trunc_svd_test_matrix<TenT>(ctx);
+
+  TenT u, v_dag;
+  tcapi::real_ten_t<TenT> s_diag;
+  tcapi::real_t<TenT> trunc_err = -1.0;
+
+  tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
+                   static_cast<tcapi::bond_dim_t<TenT>>(chi_max), s_min);
+
+  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(expected_chi), tol,
+                          diag_order::any);
+  TCAPICT_ASSERT_CLOSE(trunc_err,
+                       trunc_svd_expected_epsilon<TenT>(expected_chi), tol);
+}
+
 // Helper: the suite's one call of overload (2), whose trailing parameters
 // TCAPI V1 declares as
 //
@@ -802,27 +837,57 @@ void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale,
 }
 #endif
 
+// TCAPI V1 on overload (1): "Fixed maximum bond dimension kept: keep at most
+// chi_max singular values after discarding those below s_min. Equivalently, (2)
+// with chi_min = 1 and target_trunc_err = 0." Under overload (2)'s rule, quoted
+// at the overload (2) section below, chi then grows among the values s_min
+// leaves until epsilon <= 0 or chi = chi_max. On this fixture, whose singular
+// values are all positive, epsilon stays above 0 while any value is left out,
+// so overload (1) retains min(chi_max, n) values, n being how many singular
+// values are not below s_min, and sigma shows whichever cutoff keeps fewer. The
+// two tests below make each keep fewer in turn, with the same s_min = 1.5,
+// which discards 1 and 0.1 and leaves 3 and 2.
+//
+// epsilon counts every value not retained, those s_min discards among them, so
+// a backend that leaves the s_min-discarded weight out of the numerator is off
+// by that weight over the total, (1^2 + 0.1^2) / 14.01 ≈ 0.0721. That is above
+// the factorization tolerance at the fixture's default epsilon for float,
+// 1e-5 * 100 = 1e-3. An s_min that discarded only 0.1 would leave a gap of
+// 0.01 / 14.01 ≈ 7.1e-4, which the float cases do not separate.
+
+/// Verify that, when chi_max decides sigma, the truncation error still counts
+/// the values s_min discards. s_min = 1.5 discards 1 and 0.1, and chi_max = 1
+/// then discards 2, so sigma is 3 and epsilon(1) = 5.01 / 14.01 ≈ 0.3576,
+/// where leaving out what s_min discards gives 4 / 14.01. A backend that drops
+/// the chi_max cap when s_min is positive keeps 3 and 2. One that ignores s_min
+/// passes here, since chi_max alone keeps 3; test_trunc_svd_s_min_limits_chi
+/// catches it.
 template <typename TenT> void test_trunc_svd(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  auto &ctx = fix.context();
-  auto matrix = trunc_svd_test_matrix<TenT>(ctx);
+  trunc_svd_chi_max_expect_retained_chi<TenT>(fix, /*chi_max=*/1,
+                                              /*s_min=*/1.5,
+                                              /*expected_chi=*/1);
+#else
+  (void)fix;
+#endif
+}
 
-  TenT u, v_dag;
-  tcapi::real_ten_t<TenT> s_diag;
-  tcapi::real_t<TenT> trunc_err = -1.0;
-
-  TCAPICT_ASSERT_NOTHROW(
-      tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
-                       static_cast<tcapi::bond_dim_t<TenT>>(2), 0.5));
-
-  // s_min = 0.5 discards 0.1, and chi_max = 2 keeps 3 and 2 of the rest.
-  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(2),
-                          tolerance(fix, tol_category::factorization),
-                          diag_order::any);
-  TCAPICT_ASSERT(trunc_err >= 0.0);
+/// Verify that s_min decides sigma when fewer values than chi_max reach it.
+/// s_min = 1.5 discards 1 and 0.1, and chi_max = 3 keeps both survivors, so
+/// sigma is 3 and 2 and epsilon(2) = 1.01 / 14.01 ≈ 0.0721. A backend that
+/// ignores s_min keeps 3, 2 and 1.
+template <typename TenT>
+void test_trunc_svd_s_min_limits_chi(tcapi_test_fixture<TenT> &fix) {
+#if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
+#ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
+  TCAPICT_RETURN_IF_SINGLE_PRECISION;
+#endif
+  trunc_svd_chi_max_expect_retained_chi<TenT>(fix, /*chi_max=*/3,
+                                              /*s_min=*/1.5,
+                                              /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -838,21 +903,9 @@ void test_trunc_svd_trunc_err_value(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  auto &ctx = fix.context();
-  auto matrix = trunc_svd_test_matrix<TenT>(ctx);
-
-  TenT u, v_dag;
-  tcapi::real_ten_t<TenT> s_diag;
-  tcapi::real_t<TenT> trunc_err = -1.0;
-
-  tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
-                   static_cast<tcapi::bond_dim_t<TenT>>(2), 0.0);
-
-  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(2),
-                          tolerance(fix, tol_category::factorization),
-                          diag_order::any);
-  TCAPICT_ASSERT_CLOSE(trunc_err, trunc_svd_expected_epsilon<TenT>(2),
-                       tolerance(fix, tol_category::factorization));
+  trunc_svd_chi_max_expect_retained_chi<TenT>(fix, /*chi_max=*/2,
+                                              /*s_min=*/0.0,
+                                              /*expected_chi=*/2);
 #else
   (void)fix;
 #endif
@@ -865,22 +918,10 @@ void test_trunc_svd_trunc_err_no_truncation(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  auto &ctx = fix.context();
-  auto matrix = trunc_svd_test_matrix<TenT>(ctx);
-
-  TenT u, v_dag;
-  tcapi::real_ten_t<TenT> s_diag;
-  tcapi::real_t<TenT> trunc_err = -1.0;
-
-  // chi_max = 10 > 4 (kappa), s_min = 0 → keep all SVs
-  tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
-                   static_cast<tcapi::bond_dim_t<TenT>>(10), 0.0);
-
-  TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(4),
-                          tolerance(fix, tol_category::factorization),
-                          diag_order::any);
-  TCAPICT_ASSERT_CLOSE(trunc_err, 0.0,
-                       tolerance(fix, tol_category::factorization));
+  // chi_max = 10 > 4 (kappa), s_min = 0 → keep all SVs, and epsilon(4) is 0.
+  trunc_svd_chi_max_expect_retained_chi<TenT>(fix, /*chi_max=*/10,
+                                              /*s_min=*/0.0,
+                                              /*expected_chi=*/4);
 #else
   (void)fix;
 #endif
@@ -893,6 +934,9 @@ void test_trunc_svd_trunc_err_bounded(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
+  // Called here rather than through trunc_svd_chi_max_expect_retained_chi,
+  // whose check of trunc_err against epsilon(1) would throw before the range
+  // checks below could report a value outside [0, 1].
   auto &ctx = fix.context();
   auto matrix = trunc_svd_test_matrix<TenT>(ctx);
 
@@ -2505,6 +2549,7 @@ void test_eigvalsh_ascending(tcapi_test_fixture<TenT> &fix) {
   X(__VA_ARGS__, "linear_algebra", test_lq_non_square)                         \
   X(__VA_ARGS__, "linear_algebra", test_lq_higher_order)                       \
   X(__VA_ARGS__, "linear_algebra", test_trunc_svd)                             \
+  X(__VA_ARGS__, "linear_algebra", test_trunc_svd_s_min_limits_chi)            \
   X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_value)             \
   X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_no_truncation)     \
   X(__VA_ARGS__, "linear_algebra", test_trunc_svd_trunc_err_bounded)           \
