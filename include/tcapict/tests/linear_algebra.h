@@ -839,13 +839,13 @@ void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale,
 // TCAPI V1 on overload (1): "Fixed maximum bond dimension kept: keep at most
 // chi_max singular values after discarding those below s_min. Equivalently, (2)
 // with chi_min = 1 and target_trunc_err = 0." Under overload (2)'s rule, quoted
-// above its tests below, chi then grows among the values s_min leaves until
-// epsilon <= 0 or chi = chi_max. On this fixture, whose singular values are all
-// positive, epsilon stays above 0 while any value is left out, so overload (1)
-// retains min(chi_max, n) values, n being how many singular values are not
-// below s_min, and sigma shows whichever cutoff keeps fewer. The two tests
-// below make each keep fewer in turn, with the same s_min = 1.5, which discards
-// 1 and 0.1 and leaves 3 and 2.
+// at the overload (2) section below, chi then grows among the values s_min
+// leaves until epsilon <= 0 or chi = chi_max. On this fixture, whose singular
+// values are all positive, epsilon stays above 0 while any value is left out,
+// so overload (1) retains min(chi_max, n) values, n being how many singular
+// values are not below s_min, and sigma shows whichever cutoff keeps fewer. The
+// two tests below make each keep fewer in turn, with the same s_min = 1.5,
+// which discards 1 and 0.1 and leaves 3 and 2.
 //
 // epsilon counts every value not retained, those s_min discards among them, so
 // a backend that leaves the s_min-discarded weight out of the numerator is off
@@ -858,7 +858,9 @@ void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale,
 /// the values s_min discards. s_min = 1.5 discards 1 and 0.1, and chi_max = 1
 /// then discards 2, so sigma is 3 and epsilon(1) = 5.01 / 14.01 ≈ 0.3576,
 /// where leaving out what s_min discards gives 4 / 14.01. A backend that drops
-/// the chi_max cap when s_min is positive keeps 3 and 2.
+/// the chi_max cap when s_min is positive keeps 3 and 2. One that ignores s_min
+/// passes here, since chi_max alone keeps 3; test_trunc_svd_s_min_limits_chi
+/// catches it.
 template <typename TenT> void test_trunc_svd(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_TRUNC_SVD) && defined(TCAPICT_HAS_DIAGONAL_CHECK)
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
