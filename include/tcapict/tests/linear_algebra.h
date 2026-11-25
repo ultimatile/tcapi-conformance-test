@@ -812,7 +812,7 @@ template <typename TenT> void test_trunc_svd(tcapi_test_fixture<TenT> &fix) {
 
   TenT u, v_dag;
   tcapi::real_ten_t<TenT> s_diag;
-  tcapi::real_t<TenT> trunc_err;
+  tcapi::real_t<TenT> trunc_err = -1.0;
 
   TCAPICT_ASSERT_NOTHROW(
       tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
