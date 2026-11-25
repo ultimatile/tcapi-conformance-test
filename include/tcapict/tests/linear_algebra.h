@@ -836,11 +836,16 @@ void trunc_svd_expect_retained_chi(tcapi_test_fixture<TenT> &fix, double scale,
 }
 #endif
 
-// On this fixture, whose singular values are all positive, overload (1) retains
-// min(chi_max, n) values, n being how many singular values are at or above
-// s_min, so sigma shows whichever cutoff keeps fewer. The two tests below make
-// each keep fewer in turn, with the same s_min = 1.5, which discards 1 and 0.1
-// and leaves 3 and 2.
+// TCAPI V1 on overload (1): "Fixed maximum bond dimension kept: keep at most
+// chi_max singular values after discarding those below s_min. Equivalently, (2)
+// with chi_min = 1 and target_trunc_err = 0." Under overload (2)'s rule, quoted
+// above its tests below, chi then grows among the values s_min leaves until
+// epsilon <= 0 or chi = chi_max. On this fixture, whose singular values are all
+// positive, epsilon stays above 0 while any value is left out, so overload (1)
+// retains min(chi_max, n) values, n being how many singular values are not
+// below s_min, and sigma shows whichever cutoff keeps fewer. The two tests
+// below make each keep fewer in turn, with the same s_min = 1.5, which discards
+// 1 and 0.1 and leaves 3 and 2.
 //
 // epsilon counts every value not retained, those s_min discards among them, so
 // a backend that leaves the s_min-discarded weight out of the numerator is off
