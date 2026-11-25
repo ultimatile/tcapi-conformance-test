@@ -656,6 +656,10 @@ constexpr bool trunc_svd_fixture_is_non_increasing_and_non_negative() {
 }
 static_assert(trunc_svd_fixture_is_non_increasing_and_non_negative(),
               "kTruncSvdFixtureSvs must be non-increasing and non-negative");
+// The overload (1) tests below also take every value to be positive, which
+// for a non-increasing table is its last value being positive.
+static_assert(kTruncSvdFixtureSvs[kTruncSvdFixtureRank - 1] > 0.0,
+              "kTruncSvdFixtureSvs must be positive");
 
 // Helper: the singular values trunc_svd retains at `chi` on the fixture matrix
 // built with `scale`, the first `chi` entries of the table, scaled.
@@ -730,10 +734,9 @@ tcapi::real_t<TenT> trunc_svd_expected_epsilon(int chi) {
                                                kTruncSvdFixtureRank, chi);
 }
 
-// Helper: run overload (1), (chi_max, s_min), on the fixture spectrum, assert
-// that the call throws no std::exception, and assert sigma, which holds the
-// retained singular values, and the truncation error against TCAPI V1's
-// epsilon for the expected chi.
+// Helper: run overload (1), (chi_max, s_min), on the fixture spectrum, and
+// assert sigma, which holds the retained singular values, and the truncation
+// error against TCAPI V1's epsilon for the expected chi.
 //
 // The overload (1) tests on this fixture that check nothing beyond those
 // differ in the two arguments and the expected chi alone, so the call and its
@@ -753,9 +756,8 @@ void trunc_svd_chi_max_expect_retained_chi(tcapi_test_fixture<TenT> &fix,
   tcapi::real_ten_t<TenT> s_diag;
   tcapi::real_t<TenT> trunc_err = -1.0;
 
-  TCAPICT_ASSERT_NOTHROW(
-      tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
-                       static_cast<tcapi::bond_dim_t<TenT>>(chi_max), s_min));
+  tcapi::trunc_svd(ctx, matrix, 1, u, s_diag, v_dag, trunc_err,
+                   static_cast<tcapi::bond_dim_t<TenT>>(chi_max), s_min);
 
   TCAPICT_EXPECT_DIAGONAL(ctx, s_diag, trunc_svd_fixture_svs(expected_chi), tol,
                           diag_order::any);
@@ -932,8 +934,9 @@ void test_trunc_svd_trunc_err_bounded(tcapi_test_fixture<TenT> &fix) {
 #ifdef TCAPICT_SKIP_TRUNC_SVD_SINGLE_PRECISION
   TCAPICT_RETURN_IF_SINGLE_PRECISION;
 #endif
-  // Not through trunc_svd_chi_max_expect_retained_chi, which asserts the value
-  // first: the range checks below run before the value check.
+  // Called here rather than through trunc_svd_chi_max_expect_retained_chi,
+  // whose check of trunc_err against epsilon(1) would throw before the range
+  // checks below could report a value outside [0, 1].
   auto &ctx = fix.context();
   auto matrix = trunc_svd_test_matrix<TenT>(ctx);
 
