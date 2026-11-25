@@ -118,6 +118,56 @@ INTEGRATION_CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/macos-homebrew.c
 
 These apply to every header under `include/tcapict/`; comments in the code refer to them by section name.
 
+### Failures
+
+At run time, a test reports a failure by letting a `std::exception` leave it.
+A failed assertion throws `tcapict::assertion_error`.
+A `std::exception` the backend throws leaves the test as it was thrown, or, where the test converts it, as an `assertion_error`; `TCAPICT_ASSERT_NOTHROW` and `TCAPICT_NOTHROW_VALUE` in `include/tcapict/assertion.h` convert one from the expression they run and report it at their own line.
+So a harness counts every `std::exception` that leaves a test as a failure, as doctest does, and does not take an `assertion_error` to mean that an assertion failed.
+It lets an exception of any other type continue, and a handler in the suite catches nothing wider than `std::exception` either, since one that caught every type would also stop the unwinding of a cancelled thread.
+
+Unless the destructor of `tcapi::context_handle_t<TenT>` can throw, `tcapi_test_fixture`'s destructor is `noexcept`, so a throw from the `destroy_context` it calls ends the process instead of leaving the test.
+
+A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at its own line.
+Any other backend call goes through `TCAPICT_ASSERT_NOTHROW` or `TCAPICT_NOTHROW_VALUE` where reporting a throw at the call is worth it, and is left bare otherwise.
+
+### What a test must accept
+
+A test compiles for, and passes, every backend that conforms to TCAPI V1, on the inputs the test uses.
+So an assertion asserts only what a TCAPI V1 clause states, asserts nothing about behavior TCAPI V1 leaves unspecified, and uses the backend's types only as TCAPI V1 says they can be used.
+
+TCAPI V1 gives no error bound for any operation, so how close a floating-point result must be is this suite's policy, not TCAPI V1's: `tol_category` in `include/tcapict/fixture.h` sets it per operation, and a backend tunes it through the fixture's `epsilon()`.
+An assertion compares at its operation's category, and a larger `epsilon()` only loosens it: an assertion a conforming backend passes at one `epsilon()` it passes at every larger one.
+
+An assertion that a conforming backend can fail says so, in its test's comment or in the section of these conventions that covers it, with the reason it is kept, such as a fault in the class under "What a test must reject" that it rejects and would let through if it were weakened until every conforming backend passed it.
+
+### What a test must reject
+
+No finite set of tests rejects every backend that does not conform to TCAPI V1: one that is correct on the inputs the suite uses and wrong on every other input passes all of them.
+So a test is judged against a class of faults, decided by what the faulty backend does, not by how the fault is worded.
+
+A fault is in the class when the backend applies one rule, the same for every input of the clause the test checks, and that rule differs from the clause in one of these ways:
+
+1. an operator, a quantity, or the order of two steps is replaced by another;
+2. a step of the clause's computation is done wrong, such as an index off by one or a sum over the wrong range;
+3. a parameter the clause gives a role is ignored.
+
+Every other fault is out of the class.
+Among them are a fault that cannot be stated as one such rule without dividing the inputs into cases the clause does not distinguish, such as a rule that applies only when some argument is positive where the clause treats every value of that argument alike, and a backend that recognizes the suite's inputs.
+What decides is how the fault can be stated, not which inputs show it: a rule applied to every input that differs from the clause only on some inputs, such as visiting the stored entries instead of every element, which differs only for a compactly stored tensor, is in the class.
+So is moving a case boundary the clause draws itself, such as `<=` in place of `<` at `s_min`.
+
+For each overload and each of its input parameters whose effect TCAPI V1 specifies, at least one test calls that overload with an expected result that depends on that parameter.
+A review finding that names a fault in the class that no test rejects is a gap: it is fixed in the change at hand when that is within the change's purpose, and filed as a follow-up issue otherwise.
+A finding that names a fault out of the class needs no change, though a test may still reject it.
+
+Applied to faults proposed for `trunc_svd`'s overload (1), whose clause reads "Fixed maximum bond dimension kept: keep at most `chi_max` singular values after discarding those below `s_min`", and to the truncation error returned in `trunc_err`, whose numerator TCAPI V1 defines as the sum of the squares of every singular value not retained:
+
+- dropping the `chi_max` cap only when `s_min` is positive divides the inputs by the sign of `s_min`, which the clause does not, so it is out of the class; dropping the cap for every input ignores `chi_max`, item 3;
+- a cap off by one only when `s_min` is positive is out of the class for the same reason; a cap off by one for every input is item 2;
+- ignoring `s_min` is item 3;
+- leaving the values `s_min` discards out of the truncation error's numerator is item 2: summing over only the values the cap removes is one rule for every input, although it differs from the clause only when `s_min` discards something.
+
 ### Out-of-place inputs
 
 TCAPI V1: "In-place variants mutate the supplied tensor operand(s), whereas out-of-place variants leave all inputs unmodified".
