@@ -125,7 +125,7 @@ A test reports a failure by letting a `std::exception` leave it: a failed assert
 A harness, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test or the construction of its `tcapi_test_fixture` as a failure, and must not take an `assertion_error` to mean that an assertion failed.
 A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives, so the suite reports no exception of another type as a failure, and a harness treats one as it chooses.
 
-A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at its own line.
+A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at the macro's invocation.
 
 ### What a test must accept
 
@@ -151,7 +151,7 @@ A fault is in the class when the backend applies one rule, the same for every in
 Every other fault is out of the class.
 Among them are a fault that cannot be stated as one such rule without dividing the inputs into cases the clause does not distinguish, such as a rule that applies only when some argument is positive where the clause treats every value of that argument alike, and a backend that recognizes the suite's inputs.
 What decides is how the fault can be stated, not which inputs show it: a rule applied to every input, differing from the clause in one or more of the ways above, is in the class even when it differs from the clause only on some inputs, such as visiting the stored entries instead of every element, which differs only for a compactly stored tensor.
-So is moving a case boundary the clause draws itself, such as `<=` in place of `<` at `s_min`, which is item 1.
+So is moving a case boundary the clause draws itself, such as `<` in place of `<=` in `trunc_svd`'s stopping condition on the truncation error and `target_trunc_err`, which is item 1.
 
 A review finding that names a fault in the class that no test rejects is a gap, and is fixed or filed as under "What a test must accept".
 A finding that names a fault some test already rejects, or a fault out of the class, needs no change, though a test may still be added that rejects the latter.
