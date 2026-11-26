@@ -365,6 +365,17 @@ void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
   // The input is read back as "Out-of-place inputs" in CONTRIBUTING.md
   // describes.
   TCAPICT_EXPECT_ELEMS(fix, a, shape, at, tol_category::exact);
+
+  // eye may be stored compactly, so its conversion is checked too.
+  auto id = tcapi::eye<TenT>(ctx, 3);
+  TenT id_b;
+  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, id, fix2.context(), id_b));
+  TCAPICT_EXPECT_ELEMS(
+      fix2, id_b, tcapi::shape_t<TenT>{3, 3},
+      [](const tcapi::elem_coors_t<TenT> &c) {
+        return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
+      },
+      tol_category::exact);
 #else
   (void)fix;
 #endif
