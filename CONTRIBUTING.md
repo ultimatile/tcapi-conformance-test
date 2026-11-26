@@ -123,27 +123,26 @@ Where a section here states how the suite reads a TCAPI V1 clause, the other sec
 
 A test reports a failure by letting a `std::exception` leave it: a failed assertion throws `tcapict::assertion_error`, and a `std::exception` from the backend that leaves a test does so as thrown or, where the test converts it, as an `assertion_error`.
 A harness, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test or the construction of its `tcapi_test_fixture` as a failure, and must not take an `assertion_error` to mean that an assertion failed.
-A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives.
+A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives, so the suite reports no exception of another type as a failure, and a harness treats one as it chooses.
 
 A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at its own line.
-Any other backend call may go through `TCAPICT_ASSERT_NOTHROW` or `TCAPICT_NOTHROW_VALUE`.
 
 ### What a test must accept
 
-A test must compile for, and pass, every backend that conforms to TCAPI V1, on the inputs the test uses and with the `tcapi_test_fixture` the backend uses.
+A test must compile for every backend that conforms to TCAPI V1 and, within the tolerance policy below, pass for it on the inputs the test uses.
 So an assertion asserts only what a TCAPI V1 clause states, and uses the backend's types only as TCAPI V1 says they can be used.
-TCAPI V1 gives no error bound, so how close a floating-point result must be is the suite's policy, set by `tol_category` and `tolerance()` in `include/tcapict/fixture.h` from the fixture's `epsilon()`, which a backend sets by specializing the fixture; a larger `epsilon()` must only loosen an assertion.
+TCAPI V1 gives no error bound, so how close a floating-point result must be is the suite's policy, which a backend loosens by specializing `tcapi_test_fixture` with a larger `epsilon()`; a larger `epsilon()` must only loosen an assertion.
 
 An assertion that a conforming backend can fail is exempt from this section exactly when its test's comment, or the section here that covers it, says so and gives the reason it is kept, such as an open question on TCAPI V1 or a fault under "What a test must reject" that only it rejects.
-A review finding that shows an assertion breaking this section is fixed in the change at hand when that is within the change's purpose, and filed as a follow-up issue otherwise.
+A review finding that shows a test breaking this section is fixed in the change at hand when that is within the change's purpose, and filed as a follow-up issue otherwise.
 
 ### What a test must reject
 
 No finite set of tests rejects every backend that does not conform to TCAPI V1: one that is correct on the inputs the suite uses and wrong on every other input passes all of them.
 So a test is judged against a class of faults, decided by what the faulty backend does, not by how the fault is worded.
-A test rejects a fault when it fails for a backend with that fault, run with the unspecialized `tcapi_test_fixture`.
+A test rejects a fault when it fails for every backend that conforms to TCAPI V1 except for that fault, run with the unspecialized `tcapi_test_fixture`.
 
-A fault is in the class when the backend applies one rule, the same for every input of the clause the test checks, and that rule differs from the clause in one or more of these ways:
+A fault is in the class when the backend applies one rule, the same for every input of the TCAPI V1 clause the fault concerns, and that rule differs from the clause in one or more of these ways:
 
 1. an operator, a quantity, or the order of two steps is replaced by another;
 2. a step of the clause's computation is done wrong, such as an index off by one or a sum over the wrong range;
@@ -154,7 +153,6 @@ Among them are a fault that cannot be stated as one such rule without dividing t
 What decides is how the fault can be stated, not which inputs show it: a rule applied to every input, differing from the clause in one or more of the ways above, is in the class even when it differs from the clause only on some inputs, such as visiting the stored entries instead of every element, which differs only for a compactly stored tensor.
 So is moving a case boundary the clause draws itself, such as `<=` in place of `<` at `s_min`, which is item 1.
 
-Each input parameter whose effect on an overload TCAPI V1 specifies must have at least one test that calls that overload with an expected result depending on that parameter.
 A review finding that names a fault in the class that no test rejects is a gap, and is fixed or filed as under "What a test must accept".
 A finding that names a fault some test already rejects, or a fault out of the class, needs no change, though a test may still be added that rejects the latter.
 
@@ -205,7 +203,7 @@ No test calls the following on a zeroth-order tensor either, since the suite rea
 Nor does any call `diag`, whose input TCAPI V1 requires to be first- or second-order.
 The suite reads the operations its zeroth-order tests do call as requiring no existing bond of a zeroth-order operand; `contract` is among them, since such an operand takes the empty label list `""`.
 
-The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the existing `clear` and `move` tests make on it, and the empty-shape assertion `test_clear_basic` makes, which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51).
+The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the `clear` and `move` tests make on it, and the empty-shape assertion `test_clear_basic` makes, all of which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51).
 Of `size_bytes` they assert only that it returns, as the tests of the other ranks do.
 
 ### Diagonal tensors

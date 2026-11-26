@@ -103,10 +103,9 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 // value, or modulus for complex values". Against an equal tensor it is true;
 // against another value, or for a complex element type a difference in the
 // imaginary part alone, it is false; and against a shape-{1} tensor holding
-// the same value it is false, since {} and {1} differ. The other value and the
-// imaginary part differ by 0.25, so epsilon is fixed at 0.125 rather than
-// fix.epsilon(), at which close is true once it reaches 0.25; every value is a
-// binary fraction, so the differences are exact.
+// the same value it is false, since {} and {1} differ. Epsilon is fixed at
+// 0.125, below the difference from each unequal value, rather than taken from
+// fix.epsilon(), which a backend may set above those differences.
 template <typename TenT>
 void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CLOSE) && defined(TCAPICT_HAS_ELEM_SWEEP)
