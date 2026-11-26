@@ -152,7 +152,7 @@ template <typename TenT>
 void test_close_maximum_norm(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
   auto &ctx = fix.context();
-  const tcapi::real_t<TenT> epsilon = 0.5;
+  const tcapi::real_t<TenT> epsilon(0.5);
   auto zero = tcapi::zeros<TenT>(ctx, {2});
 
   auto within = tcapi::zeros<TenT>(ctx, {2});
