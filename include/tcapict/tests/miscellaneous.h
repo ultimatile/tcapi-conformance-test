@@ -348,25 +348,18 @@ void test_convert_same_context(tcapi_test_fixture<TenT> &fix) {
 // it on every exit; b, declared after it, is released first.
 template <typename TenT>
 void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
-#ifndef TCAPICT_SKIP_CONVERT
+#if !defined(TCAPICT_SKIP_CONVERT) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
   auto a = tcapi::eye<TenT>(ctx, 3);
 
   tcapi_test_fixture<TenT> fix2;
-  auto &ctx2 = fix2.context();
   TenT b;
-  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, ctx2, b));
-  TCAPICT_ASSERT(tcapi::shape(ctx2, b) == tcapi::shape(ctx, a));
-  for (tcapi::elem_coor_t<TenT> i = 0; i < 3; ++i) {
-    for (tcapi::elem_coor_t<TenT> j = 0; j < 3; ++j) {
-      const auto elem = tcapi::get_elem(ctx2, b, {i, j});
-      TCAPICT_ASSERT_CLOSE(real_part<TenT>(elem), i == j ? 1.0 : 0.0, eps);
-      if constexpr (is_complex_v<TenT>) {
-        TCAPICT_ASSERT_CLOSE(imag_part<TenT>(elem), 0.0, eps);
-      }
-    }
-  }
+  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, fix2.context(), b));
+  TCAPICT_EXPECT_ELEMS(fix2, b, tcapi::shape_t<TenT>{3, 3},
+                       [](const tcapi::elem_coors_t<TenT> &c) {
+                         return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0,
+                                                     0.0);
+                       });
 #else
   (void)fix;
 #endif
