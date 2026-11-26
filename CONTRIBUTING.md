@@ -125,7 +125,7 @@ A test reports a failure by letting a `std::exception` leave it: a failed assert
 A harness, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test or the construction of its `tcapi_test_fixture` as a failure, and must not take an `assertion_error` to mean that an assertion failed.
 A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives, so the suite reports no exception of another type as a failure, and a harness treats one as it chooses.
 
-A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at the macro's invocation.
+A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a `std::exception` from it is reported at the macro's invocation.
 
 ### What a test must accept
 
@@ -140,6 +140,7 @@ A review finding that shows a test breaking this section is fixed in the change 
 
 No finite set of tests rejects every backend that does not conform to TCAPI V1: one that is correct on the inputs the suite uses and wrong on every other input passes all of them.
 So a test is judged against a class of faults, decided by what the faulty backend does, not by how the fault is worded.
+Whether a test rejects a fault is judged at the `epsilon()` the primary `tcapi_test_fixture` template defines.
 
 A fault is in the class when the backend applies one rule, the same for every input of the TCAPI V1 clause the fault concerns, and that rule differs from the clause in one or more of these ways:
 

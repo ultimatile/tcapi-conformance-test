@@ -78,9 +78,10 @@ void test_close_identical(tcapi_test_fixture<TenT> &fix) {
 
 // --- close (eq) : different tensors ---
 
-// eye and zeros differ by 1 on the diagonal, so close is false at epsilon 0.5.
-// The epsilon is fixed rather than fix.epsilon(), at which close is true once
-// it reaches 1.
+// eye and zeros differ by 1 on the diagonal, so close is false at epsilon 0.5
+// and at 2^-20. The epsilons are fixed rather than fix.epsilon(), at which
+// close is true once it reaches 1; the small one keeps the false case checked
+// at a small tolerance too.
 template <typename TenT>
 void test_close_different(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
@@ -91,6 +92,8 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 
   bool are_equal = tcapi::close(ctx, tensor1, tensor2, eps);
   TCAPICT_ASSERT(are_equal == false);
+  TCAPICT_ASSERT(!tcapi::close(ctx, tensor1, tensor2,
+                               tcapi::real_t<TenT>(9.5367431640625e-07)));
 #else
   (void)fix;
 #endif
