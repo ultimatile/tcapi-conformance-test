@@ -129,11 +129,11 @@ A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHR
 
 ### What a test must accept
 
-A test must compile for every backend that conforms to TCAPI V1 and, within the tolerance policy below, pass for it on the inputs the test uses.
+A test must compile for every backend that conforms to TCAPI V1 and, within the suite's tolerance policy, pass for it on the inputs the test uses.
 So an assertion asserts only what a TCAPI V1 clause states, and uses the backend's types only as TCAPI V1 says they can be used.
 TCAPI V1 gives no error bound, so how close a floating-point result must be is the suite's policy, which a backend loosens by specializing `tcapi_test_fixture` with a larger `epsilon()`; a larger `epsilon()` must only loosen an assertion.
 
-An assertion that a conforming backend can fail is exempt from this section exactly when its test's comment, or the section here that covers it, says so and gives the reason it is kept, such as an open question on TCAPI V1 or a fault under "What a test must reject" that only it rejects.
+An assertion that a conforming backend can fail is exempt from this section exactly when its test's comment, or a section here that names it, says so and gives the reason it is kept, such as an open question on TCAPI V1 or a fault under "What a test must reject" that only it rejects.
 A review finding that shows a test breaking this section is fixed in the change at hand when that is within the change's purpose, and filed as a follow-up issue otherwise.
 
 ### What a test must reject
