@@ -85,7 +85,7 @@ template <typename TenT>
 void test_close_different(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
   auto &ctx = fix.context();
-  const tcapi::real_t<TenT> eps = 0.5;
+  const tcapi::real_t<TenT> eps(0.5);
   auto tensor1 = tcapi::eye<TenT>(ctx, 2);
   auto tensor2 = tcapi::zeros<TenT>(ctx, {2, 2});
 
@@ -110,7 +110,7 @@ template <typename TenT>
 void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CLOSE) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  const tcapi::real_t<TenT> eps = 0.125;
+  const tcapi::real_t<TenT> eps(0.125);
   auto value = [](const tcapi::elem_coors_t<TenT> &) { return 1.5; };
   auto a = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, a, 1.5);
@@ -352,15 +352,19 @@ void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
   auto &ctx = fix.context();
   auto a = tcapi::eye<TenT>(ctx, 3);
 
+  const auto identity = [](const tcapi::elem_coors_t<TenT> &c) {
+    return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
+  };
+
   tcapi_test_fixture<TenT> fix2;
   TenT b;
   TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, fix2.context(), b));
-  TCAPICT_EXPECT_ELEMS(
-      fix2, b, tcapi::shape_t<TenT>{3, 3},
-      [](const tcapi::elem_coors_t<TenT> &c) {
-        return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
-      },
-      tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(fix2, b, tcapi::shape_t<TenT>{3, 3}, identity,
+                       tol_category::exact);
+  // The input is read back as "Out-of-place inputs" in CONTRIBUTING.md
+  // describes.
+  TCAPICT_EXPECT_ELEMS(fix, a, tcapi::shape_t<TenT>{3, 3}, identity,
+                       tol_category::exact);
 #else
   (void)fix;
 #endif
@@ -381,6 +385,7 @@ void test_convert_data_integrity(tcapi_test_fixture<TenT> &fix) {
   auto &ctx2 = fix2.context();
   TenT b;
   tcapi::convert(ctx, a, ctx2, b);
+  TCAPICT_ASSERT(tcapi::shape(ctx2, b) == tcapi::shape(ctx, a));
 
   auto val1 = tcapi::get_elem(ctx2, b, {0, 0});
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(val1), 1.23, eps);

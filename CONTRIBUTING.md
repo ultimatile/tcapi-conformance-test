@@ -140,7 +140,6 @@ A review finding that shows a test breaking this section is fixed in the change 
 
 No finite set of tests rejects every backend that does not conform to TCAPI V1: one that is correct on the inputs the suite uses and wrong on every other input passes all of them.
 So a test is judged against a class of faults, decided by what the faulty backend does, not by how the fault is worded.
-A test rejects a fault when it fails for every backend that conforms to TCAPI V1 except for that fault, at the `epsilon()` the primary `tcapi_test_fixture` template defines.
 
 A fault is in the class when the backend applies one rule, the same for every input of the TCAPI V1 clause the fault concerns, and that rule differs from the clause in one or more of these ways:
 
