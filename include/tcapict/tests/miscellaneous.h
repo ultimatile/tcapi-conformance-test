@@ -355,11 +355,12 @@ void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
   tcapi_test_fixture<TenT> fix2;
   TenT b;
   TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, fix2.context(), b));
-  TCAPICT_EXPECT_ELEMS(fix2, b, tcapi::shape_t<TenT>{3, 3},
-                       [](const tcapi::elem_coors_t<TenT> &c) {
-                         return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0,
-                                                     0.0);
-                       });
+  TCAPICT_EXPECT_ELEMS(
+      fix2, b, tcapi::shape_t<TenT>{3, 3},
+      [](const tcapi::elem_coors_t<TenT> &c) {
+        return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
+      },
+      tol_category::exact);
 #else
   (void)fix;
 #endif
