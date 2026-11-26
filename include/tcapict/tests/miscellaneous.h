@@ -92,8 +92,8 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 
   bool are_equal = tcapi::close(ctx, tensor1, tensor2, eps);
   TCAPICT_ASSERT(are_equal == false);
-  TCAPICT_ASSERT(!tcapi::close(ctx, tensor1, tensor2,
-                               tcapi::real_t<TenT>(9.5367431640625e-07)));
+  TCAPICT_ASSERT(
+      !tcapi::close(ctx, tensor1, tensor2, tcapi::real_t<TenT>(1.0 / 1048576)));
 #else
   (void)fix;
 #endif
@@ -353,21 +353,18 @@ template <typename TenT>
 void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CONVERT) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  auto a = tcapi::eye<TenT>(ctx, 3);
-
-  const auto identity = [](const tcapi::elem_coors_t<TenT> &c) {
-    return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
-  };
+  const tcapi::shape_t<TenT> shape = {2, 3};
+  auto at = ramp_over<TenT>(shape, -2.0);
+  auto a = tcapi::zeros<TenT>(ctx, shape);
+  TCAPICT_SET_ELEMS(fix, a, at);
 
   tcapi_test_fixture<TenT> fix2;
   TenT b;
   TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, fix2.context(), b));
-  TCAPICT_EXPECT_ELEMS(fix2, b, tcapi::shape_t<TenT>{3, 3}, identity,
-                       tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(fix2, b, shape, at, tol_category::exact);
   // The input is read back as "Out-of-place inputs" in CONTRIBUTING.md
   // describes.
-  TCAPICT_EXPECT_ELEMS(fix, a, tcapi::shape_t<TenT>{3, 3}, identity,
-                       tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(fix, a, shape, at, tol_category::exact);
 #else
   (void)fix;
 #endif
