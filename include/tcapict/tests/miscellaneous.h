@@ -78,11 +78,14 @@ void test_close_identical(tcapi_test_fixture<TenT> &fix) {
 
 // --- close (eq) : different tensors ---
 
+// eye and zeros differ by 1 on the diagonal, so close is false at epsilon 0.5.
+// The epsilon is fixed rather than fix.epsilon(), at which close is true once
+// it reaches 1.
 template <typename TenT>
 void test_close_different(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
+  const tcapi::real_t<TenT> eps = 0.5;
   auto tensor1 = tcapi::eye<TenT>(ctx, 2);
   auto tensor2 = tcapi::zeros<TenT>(ctx, {2, 2});
 
@@ -100,12 +103,15 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 // value, or modulus for complex values". Against an equal tensor it is true;
 // against another value, or for a complex element type a difference in the
 // imaginary part alone, it is false; and against a shape-{1} tensor holding
-// the same value it is false, since {} and {1} differ.
+// the same value it is false, since {} and {1} differ. The other value and the
+// imaginary part differ by 0.25, so epsilon is fixed at 0.125 rather than
+// fix.epsilon(), at which close is true once it reaches 0.25; every value is a
+// binary fraction, so the differences are exact.
 template <typename TenT>
 void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CLOSE) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
+  const tcapi::real_t<TenT> eps = 0.125;
   auto value = [](const tcapi::elem_coors_t<TenT> &) { return 1.5; };
   auto a = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, a, 1.5);

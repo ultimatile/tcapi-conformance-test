@@ -9,8 +9,7 @@
 
 namespace tcapict {
 
-/// Exception thrown when a conformance test assertion fails, and the one a
-/// std::exception from the backend is converted to where a test converts it.
+/// Exception thrown when a conformance test assertion fails.
 struct assertion_error : std::runtime_error {
   using std::runtime_error::runtime_error;
 };

@@ -117,39 +117,33 @@ INTEGRATION_CMAKE_ARGS='-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/macos-homebrew.c
 ## Conventions for writing tests
 
 These apply to every header under `include/tcapict/`; comments in the code refer to them by section name.
+Where a section here states how the suite reads a TCAPI V1 clause, the other sections take that reading as what the clause states.
 
 ### Failures
 
-In this section a test is a test function together with the construction of the `tcapi_test_fixture` it runs on.
-At run time, a test reports a failure by letting a `std::exception` leave it.
-A failed assertion throws `tcapict::assertion_error`.
-A `std::exception` the backend throws that leaves the test does so as it was thrown, or, where the test converts it, as an `assertion_error`; `TCAPICT_ASSERT_NOTHROW` and `TCAPICT_NOTHROW_VALUE` in `include/tcapict/assertion.h` convert one from the expression they run and report it at their own line.
-So a harness that runs the tests, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test as a failure, as doctest does, and must not take an `assertion_error` to mean that an assertion failed.
-What it does with an exception of any other type is its own choice; doctest counts that as a failure too.
-A handler in the suite, by contrast, must catch nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives.
+A test reports a failure by letting a `std::exception` leave it: a failed assertion throws `tcapict::assertion_error`, and a `std::exception` from the backend that leaves a test does so as thrown or, where the test converts it, as an `assertion_error`.
+A harness, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test or the construction of its `tcapi_test_fixture` as a failure, and must not take an `assertion_error` to mean that an assertion failed.
+A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives.
 
-A call to `concatenate`, `stack` or `linear_combine` must go through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at its own line.
-Any other backend call may go through `TCAPICT_ASSERT_NOTHROW` or `TCAPICT_NOTHROW_VALUE` where reporting a throw at the call is worth it.
+A call to `concatenate`, `stack` or `linear_combine` goes through `TCAPICT_NOTHROW_VALUE`, so that a throw from it is reported at its own line.
+Any other backend call may go through `TCAPICT_ASSERT_NOTHROW` or `TCAPICT_NOTHROW_VALUE`.
 
 ### What a test must accept
 
-A test must compile for every backend that conforms to TCAPI V1, and pass for it on the inputs the test uses at an `epsilon()` the backend can set, as the next paragraph describes.
-So an assertion must assert only what a TCAPI V1 clause states, must assert nothing about behavior TCAPI V1 leaves unspecified, and must use the backend's types only as TCAPI V1 says they can be used.
-Where another section here states how the suite reads a TCAPI V1 clause, that reading is what the clause states throughout this section, in what conforming to TCAPI V1 means as well.
+A test must compile for, and pass, every backend that conforms to TCAPI V1, on the inputs the test uses and with the `tcapi_test_fixture` the backend uses.
+So an assertion asserts only what a TCAPI V1 clause states, and uses the backend's types only as TCAPI V1 says they can be used.
+TCAPI V1 gives no error bound, so how close a floating-point result must be is the suite's policy, set by `tol_category` and `tolerance()` in `include/tcapict/fixture.h` from the fixture's `epsilon()`, which a backend sets by specializing the fixture; a larger `epsilon()` must only loosen an assertion.
 
-TCAPI V1 gives no error bound for any operation, so how close a floating-point result must be is this suite's policy, not TCAPI V1's: `tolerance()` in `include/tcapict/fixture.h` returns it for each `tol_category`: 0 for `exact`, and a multiple of the fixture's `epsilon()`, which a backend sets by specializing `tcapi_test_fixture`, for the others.
-A larger `epsilon()` must only loosen an assertion: an assertion a conforming backend passes at one `epsilon()` it must pass at every larger one.
-
+An assertion that a conforming backend can fail is exempt from this section exactly when its test's comment, or the section here that covers it, says so and gives the reason it is kept, such as an open question on TCAPI V1 or a fault under "What a test must reject" that only it rejects.
 A review finding that shows an assertion breaking this section is fixed in the change at hand when that is within the change's purpose, and filed as a follow-up issue otherwise.
-
-An assertion that a conforming backend can fail is exempt from the requirements above exactly when its test's comment, or the section of these conventions that covers it, says so and gives the reason it is kept, such as a fault in the class under "What a test must reject" that it rejects and would let through if it were weakened until every conforming backend passed it.
 
 ### What a test must reject
 
 No finite set of tests rejects every backend that does not conform to TCAPI V1: one that is correct on the inputs the suite uses and wrong on every other input passes all of them.
 So a test is judged against a class of faults, decided by what the faulty backend does, not by how the fault is worded.
+A test rejects a fault when it fails for a backend with that fault, run with the unspecialized `tcapi_test_fixture`.
 
-A fault is in the class when the backend applies one rule, the same for every input of the clause the test checks, and that rule differs from the clause in one of these ways:
+A fault is in the class when the backend applies one rule, the same for every input of the clause the test checks, and that rule differs from the clause in one or more of these ways:
 
 1. an operator, a quantity, or the order of two steps is replaced by another;
 2. a step of the clause's computation is done wrong, such as an index off by one or a sum over the wrong range;
@@ -157,7 +151,7 @@ A fault is in the class when the backend applies one rule, the same for every in
 
 Every other fault is out of the class.
 Among them are a fault that cannot be stated as one such rule without dividing the inputs into cases the clause does not distinguish, such as a rule that applies only when some argument is positive where the clause treats every value of that argument alike, and a backend that recognizes the suite's inputs.
-What decides is how the fault can be stated, not which inputs show it: a rule applied to every input, differing from the clause in one of the ways above, is in the class even when it differs from the clause only on some inputs, such as visiting the stored entries instead of every element, which differs only for a compactly stored tensor.
+What decides is how the fault can be stated, not which inputs show it: a rule applied to every input, differing from the clause in one or more of the ways above, is in the class even when it differs from the clause only on some inputs, such as visiting the stored entries instead of every element, which differs only for a compactly stored tensor.
 So is moving a case boundary the clause draws itself, such as `<=` in place of `<` at `s_min`, which is item 1.
 
 Each input parameter whose effect on an overload TCAPI V1 specifies must have at least one test that calls that overload with an expected result depending on that parameter.
@@ -211,7 +205,7 @@ No test calls the following on a zeroth-order tensor either, since the suite rea
 Nor does any call `diag`, whose input TCAPI V1 requires to be first- or second-order.
 The suite reads the operations its zeroth-order tests do call as requiring no existing bond of a zeroth-order operand; `contract` is among them, since such an operand takes the empty label list `""`.
 
-The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the existing `clear` and `move` tests make on it, which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51).
+The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the existing `clear` and `move` tests make on it, and the empty-shape assertion `test_clear_basic` makes, which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51).
 Of `size_bytes` they assert only that it returns, as the tests of the other ranks do.
 
 ### Diagonal tensors
