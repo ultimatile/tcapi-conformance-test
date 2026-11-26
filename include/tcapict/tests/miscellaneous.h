@@ -103,9 +103,9 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 // value, or modulus for complex values". Against an equal tensor it is true;
 // against another value, or for a complex element type a difference in the
 // imaginary part alone, it is false; and against a shape-{1} tensor holding
-// the same value it is false, since {} and {1} differ. Epsilon is fixed at
-// 0.125, below the difference from each unequal value, rather than taken from
-// fix.epsilon(), which a backend may set above those differences.
+// the same value it is false, since {} and {1} differ. The false cases compare
+// at a fixed 0.125, below the difference from each unequal value, rather than
+// at fix.epsilon(), which a backend may set above those differences.
 template <typename TenT>
 void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CLOSE) && defined(TCAPICT_HAS_ELEM_SWEEP)
@@ -117,7 +117,7 @@ void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 
   auto same = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, same, 1.5);
-  TCAPICT_ASSERT(tcapi::close(ctx, a, same, eps));
+  TCAPICT_ASSERT(tcapi::close(ctx, a, same, fix.epsilon()));
 
   auto other = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, other, 1.75);
@@ -342,12 +342,10 @@ void test_convert_same_context(tcapi_test_fixture<TenT> &fix) {
 
 // --- convert (different contexts) ---
 
-// This test and test_convert_data_integrity read b, which convert writes on
-// ctx2, through ctx, and destroy ctx2 while b is alive; TCAPI V1 does not say
-// a tensor can be used that way, so a conforming backend can fail them. That
-// breaks "What a test must accept" in CONTRIBUTING.md, and
-// https://github.com/ultimatile/tcapi-conformance-test/issues/59 tracks the
-// fix.
+// TCAPI V1: "the result is written into `t2`", the tensor on the destination
+// context, so this test and test_convert_data_integrity read it through that
+// context. The destination context comes from a second fixture, which releases
+// it on every exit; b, declared after it, is released first.
 template <typename TenT>
 void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CONVERT
@@ -355,15 +353,20 @@ void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
   auto eps = fix.epsilon();
   auto a = tcapi::eye<TenT>(ctx, 3);
 
-  tcapi::context_handle_t<TenT> ctx2;
-  tcapi::create_context(ctx2);
-
+  tcapi_test_fixture<TenT> fix2;
+  auto &ctx2 = fix2.context();
   TenT b;
   TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, ctx2, b));
-  TCAPICT_ASSERT(tcapi::close(ctx, a, b, eps));
-  TCAPICT_ASSERT(tcapi::shape(ctx, a) == tcapi::shape(ctx, b));
-
-  tcapi::destroy_context(ctx2);
+  TCAPICT_ASSERT(tcapi::shape(ctx2, b) == tcapi::shape(ctx, a));
+  for (tcapi::elem_coor_t<TenT> i = 0; i < 3; ++i) {
+    for (tcapi::elem_coor_t<TenT> j = 0; j < 3; ++j) {
+      const auto elem = tcapi::get_elem(ctx2, b, {i, j});
+      TCAPICT_ASSERT_CLOSE(real_part<TenT>(elem), i == j ? 1.0 : 0.0, eps);
+      if constexpr (is_complex_v<TenT>) {
+        TCAPICT_ASSERT_CLOSE(imag_part<TenT>(elem), 0.0, eps);
+      }
+    }
+  }
 #else
   (void)fix;
 #endif
@@ -380,23 +383,21 @@ void test_convert_data_integrity(tcapi_test_fixture<TenT> &fix) {
   tcapi::set_elem(ctx, a, {0, 0}, make_elem<TenT>(1.23, 4.56));
   tcapi::set_elem(ctx, a, {1, 2}, make_elem<TenT>(-7.89, 0.12));
 
+  tcapi_test_fixture<TenT> fix2;
+  auto &ctx2 = fix2.context();
   TenT b;
-  tcapi::context_handle_t<TenT> ctx2;
-  tcapi::create_context(ctx2);
   tcapi::convert(ctx, a, ctx2, b);
 
-  auto val1 = tcapi::get_elem(ctx, b, {0, 0});
+  auto val1 = tcapi::get_elem(ctx2, b, {0, 0});
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(val1), 1.23, eps);
 
-  auto val2 = tcapi::get_elem(ctx, b, {1, 2});
+  auto val2 = tcapi::get_elem(ctx2, b, {1, 2});
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(val2), -7.89, eps);
 
   if constexpr (is_complex_v<TenT>) {
     TCAPICT_ASSERT_CLOSE(imag_part<TenT>(val1), 4.56, eps);
     TCAPICT_ASSERT_CLOSE(imag_part<TenT>(val2), 0.12, eps);
   }
-
-  tcapi::destroy_context(ctx2);
 #else
   (void)fix;
 #endif

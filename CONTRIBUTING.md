@@ -203,7 +203,7 @@ No test calls the following on a zeroth-order tensor either, since the suite rea
 Nor does any call `diag`, whose input TCAPI V1 requires to be first- or second-order.
 The suite reads the operations its zeroth-order tests do call as requiring no existing bond of a zeroth-order operand; `contract` is among them, since such an operand takes the empty label list `""`.
 
-The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the `clear` and `move` tests make on it, and the empty-shape assertion `test_clear_basic` makes, all of which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51).
+The zeroth-order tests assert nothing about `TenT{}`, the state `clear` and `move` leave, since TCAPI V1 does not say what queries return on it; the `order == 0` assertions the `clear` and `move` tests make on it, and the empty-shape assertion `test_clear_basic` makes, all of which a backend conforming to TCAPI V1 can therefore fail, are left as they are, pending the open question recorded on [#51](https://github.com/ultimatile/tcapi-conformance-test/issues/51), which TCAPI V1 has not answered.
 Of `size_bytes` they assert only that it returns, as the tests of the other ranks do.
 
 ### Diagonal tensors
