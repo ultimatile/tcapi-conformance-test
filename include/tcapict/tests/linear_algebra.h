@@ -1262,7 +1262,8 @@ void test_trunc_svd_chi_min_not_restored_below_s_min(
 /// arithmetic path, so an implementation that summed the discarded tail for the
 /// comparison and took the complement of the retained prefix for the report
 /// could land the two an ulp apart and fail here while conforming. A backend in
-/// that shape should compute epsilon once.
+/// that shape should compute epsilon once. The test is kept because only a
+/// target on an achievable epsilon tells `<` from `<=` in this comparison.
 ///
 /// SVs [5, 4, 3] give sum s_i^2 = 50 with 16 + 9 = 25 discarded at chi = 1, so
 /// the measured epsilon is 25 / 50 up to the backend's rounding. It stays well

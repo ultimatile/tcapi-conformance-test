@@ -121,7 +121,7 @@ Where a section here states how the suite reads a TCAPI V1 clause, the other sec
 
 ### Failures
 
-A test reports a failure by letting a `std::exception` leave it: a failed assertion throws `tcapict::assertion_error`, and a `std::exception` from the backend that leaves a test does so as thrown or, where the test converts it, as an `assertion_error`.
+A test reports a failure by letting a `std::exception` leave it: a failed assertion throws `tcapict::assertion_error`, and any other `std::exception` that leaves a test does so as thrown or, where the test converts it, as an `assertion_error`.
 A harness, whether an adapter under `include/tcapict/adapters/` or one a backend writes, must count every `std::exception` that leaves a test or the construction of its `tcapi_test_fixture` as a failure, and must not take an `assertion_error` to mean that an assertion failed.
 A handler in the suite catches nothing wider than `std::exception`, for the reason the docstring of `detail::nothrow_call` in `include/tcapict/assertion.h` gives, so the suite reports no exception of another type as a failure, and a harness treats one as it chooses.
 

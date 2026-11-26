@@ -342,6 +342,12 @@ void test_convert_same_context(tcapi_test_fixture<TenT> &fix) {
 
 // --- convert (different contexts) ---
 
+// This test and test_convert_data_integrity read b, which convert writes on
+// ctx2, through ctx, and destroy ctx2 while b is alive; TCAPI V1 does not say
+// a tensor can be used that way, so a conforming backend can fail them. That
+// breaks "What a test must accept" in CONTRIBUTING.md, and
+// https://github.com/ultimatile/tcapi-conformance-test/issues/59 tracks the
+// fix.
 template <typename TenT>
 void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CONVERT
