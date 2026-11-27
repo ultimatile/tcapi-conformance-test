@@ -137,7 +137,6 @@ template <typename TenT> void test_eye(tcapi_test_fixture<TenT> &fix) {
 template <typename TenT> void test_eye_to_range(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_EYE) && !defined(TCAPICT_SKIP_TO_RANGE)
   auto &ctx = fix.context();
-  auto tol = tolerance(fix, tol_category::elementwise);
   auto identity = tcapi::eye<TenT>(ctx, 3);
 
   auto sentinel = make_elem<TenT>(-999.0);
@@ -149,8 +148,12 @@ template <typename TenT> void test_eye_to_range(tcapi_test_fixture<TenT> &fix) {
     for (std::size_t j = 0; j < 3; ++j) {
       auto elem = container[i * 3 + j];
       // Unwritten slot, as distinct from a slot written with a wrong value.
-      TCAPICT_ASSERT(
-          std::abs(real_part<TenT>(elem) - real_part<TenT>(sentinel)) > tol);
+      bool holds_sentinel = real_part<TenT>(elem) == real_part<TenT>(sentinel);
+      if constexpr (is_complex_v<TenT>) {
+        holds_sentinel = holds_sentinel &&
+                         imag_part<TenT>(elem) == imag_part<TenT>(sentinel);
+      }
+      TCAPICT_ASSERT(!holds_sentinel);
       // eye's elements are exact: eye does no floating-point arithmetic
       // (tol_category::exact in fixture.h), and its off-diagonal zeros are
       // exact as "Diagonal tensors" in CONTRIBUTING.md says.

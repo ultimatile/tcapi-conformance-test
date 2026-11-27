@@ -78,16 +78,22 @@ void test_close_identical(tcapi_test_fixture<TenT> &fix) {
 
 // --- close (eq) : different tensors ---
 
+// eye and zeros differ by 1 on the diagonal, so close is false at epsilon 0.5
+// and at 2^-20 (1.0 / 1048576). The epsilons are fixed rather than
+// fix.epsilon(), at which close is true once it reaches 1; the small one keeps
+// the false case checked at a small tolerance too.
 template <typename TenT>
 void test_close_different(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
+  const tcapi::real_t<TenT> eps(0.5);
   auto tensor1 = tcapi::eye<TenT>(ctx, 2);
   auto tensor2 = tcapi::zeros<TenT>(ctx, {2, 2});
 
   bool are_equal = tcapi::close(ctx, tensor1, tensor2, eps);
   TCAPICT_ASSERT(are_equal == false);
+  TCAPICT_ASSERT(
+      !tcapi::close(ctx, tensor1, tensor2, tcapi::real_t<TenT>(1.0 / 1048576)));
 #else
   (void)fix;
 #endif
@@ -100,19 +106,21 @@ void test_close_different(tcapi_test_fixture<TenT> &fix) {
 // value, or modulus for complex values". Against an equal tensor it is true;
 // against another value, or for a complex element type a difference in the
 // imaginary part alone, it is false; and against a shape-{1} tensor holding
-// the same value it is false, since {} and {1} differ.
+// the same value it is false, since {} and {1} differ. The false cases compare
+// at a fixed 0.125, below the difference from each unequal value, rather than
+// at fix.epsilon(), which a backend may set above those differences.
 template <typename TenT>
 void test_close_zeroth_order(tcapi_test_fixture<TenT> &fix) {
 #if !defined(TCAPICT_SKIP_CLOSE) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
+  const tcapi::real_t<TenT> eps(0.125);
   auto value = [](const tcapi::elem_coors_t<TenT> &) { return 1.5; };
   auto a = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, a, 1.5);
 
   auto same = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, same, 1.5);
-  TCAPICT_ASSERT(tcapi::close(ctx, a, same, eps));
+  TCAPICT_ASSERT(tcapi::close(ctx, a, same, fix.epsilon()));
 
   auto other = tcapi::zeros<TenT>(ctx, {});
   TCAPICT_SET_ZEROTH_ORDER(fix, other, 1.75);
@@ -147,7 +155,7 @@ template <typename TenT>
 void test_close_maximum_norm(tcapi_test_fixture<TenT> &fix) {
 #ifndef TCAPICT_SKIP_CLOSE
   auto &ctx = fix.context();
-  const tcapi::real_t<TenT> epsilon = 0.5;
+  const tcapi::real_t<TenT> epsilon(0.5);
   auto zero = tcapi::zeros<TenT>(ctx, {2});
 
   auto within = tcapi::zeros<TenT>(ctx, {2});
@@ -337,22 +345,38 @@ void test_convert_same_context(tcapi_test_fixture<TenT> &fix) {
 
 // --- convert (different contexts) ---
 
+// TCAPI V1: "the result is written into `t2`", the tensor on the destination
+// context, so this test and test_convert_data_integrity read it through that
+// context. The destination context comes from a second fixture, which releases
+// it on every exit; b, declared after it, is released first.
 template <typename TenT>
 void test_convert_different_context(tcapi_test_fixture<TenT> &fix) {
-#ifndef TCAPICT_SKIP_CONVERT
+#if !defined(TCAPICT_SKIP_CONVERT) && defined(TCAPICT_HAS_ELEM_SWEEP)
   auto &ctx = fix.context();
-  auto eps = fix.epsilon();
-  auto a = tcapi::eye<TenT>(ctx, 3);
+  const tcapi::shape_t<TenT> shape = {2, 3};
+  auto at = ramp_over<TenT>(shape, -2.0);
+  auto a = tcapi::zeros<TenT>(ctx, shape);
+  TCAPICT_SET_ELEMS(fix, a, at);
 
-  tcapi::context_handle_t<TenT> ctx2;
-  tcapi::create_context(ctx2);
-
+  tcapi_test_fixture<TenT> fix2;
   TenT b;
-  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, ctx2, b));
-  TCAPICT_ASSERT(tcapi::close(ctx, a, b, eps));
-  TCAPICT_ASSERT(tcapi::shape(ctx, a) == tcapi::shape(ctx, b));
+  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, a, fix2.context(), b));
+  TCAPICT_EXPECT_ELEMS(fix2, b, shape, at, tol_category::exact);
+  // The input is read back as "Out-of-place inputs" in CONTRIBUTING.md
+  // describes.
+  TCAPICT_EXPECT_ELEMS(fix, a, shape, at, tol_category::exact);
 
-  tcapi::destroy_context(ctx2);
+  // eye may be stored compactly, so its conversion is checked too.
+  auto id = tcapi::eye<TenT>(ctx, 3);
+  TenT id_b;
+  TCAPICT_ASSERT_NOTHROW(tcapi::convert(ctx, id, fix2.context(), id_b));
+  const auto identity = [](const tcapi::elem_coors_t<TenT> &c) {
+    return std::complex<double>(c[0] == c[1] ? 1.0 : 0.0, 0.0);
+  };
+  TCAPICT_EXPECT_ELEMS(fix2, id_b, tcapi::shape_t<TenT>{3, 3}, identity,
+                       tol_category::exact);
+  TCAPICT_EXPECT_ELEMS(fix, id, tcapi::shape_t<TenT>{3, 3}, identity,
+                       tol_category::exact);
 #else
   (void)fix;
 #endif
@@ -369,23 +393,22 @@ void test_convert_data_integrity(tcapi_test_fixture<TenT> &fix) {
   tcapi::set_elem(ctx, a, {0, 0}, make_elem<TenT>(1.23, 4.56));
   tcapi::set_elem(ctx, a, {1, 2}, make_elem<TenT>(-7.89, 0.12));
 
+  tcapi_test_fixture<TenT> fix2;
+  auto &ctx2 = fix2.context();
   TenT b;
-  tcapi::context_handle_t<TenT> ctx2;
-  tcapi::create_context(ctx2);
   tcapi::convert(ctx, a, ctx2, b);
+  TCAPICT_ASSERT(tcapi::shape(ctx2, b) == tcapi::shape(ctx, a));
 
-  auto val1 = tcapi::get_elem(ctx, b, {0, 0});
+  auto val1 = tcapi::get_elem(ctx2, b, {0, 0});
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(val1), 1.23, eps);
 
-  auto val2 = tcapi::get_elem(ctx, b, {1, 2});
+  auto val2 = tcapi::get_elem(ctx2, b, {1, 2});
   TCAPICT_ASSERT_CLOSE(real_part<TenT>(val2), -7.89, eps);
 
   if constexpr (is_complex_v<TenT>) {
     TCAPICT_ASSERT_CLOSE(imag_part<TenT>(val1), 4.56, eps);
     TCAPICT_ASSERT_CLOSE(imag_part<TenT>(val2), 0.12, eps);
   }
-
-  tcapi::destroy_context(ctx2);
 #else
   (void)fix;
 #endif

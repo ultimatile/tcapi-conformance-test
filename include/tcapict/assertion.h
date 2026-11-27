@@ -9,7 +9,8 @@
 
 namespace tcapict {
 
-/// Exception thrown when a conformance test assertion fails.
+/// Exception thrown when a conformance test assertion fails. A handler in the
+/// suite that catches a std::exception reports it as one of these too.
 struct assertion_error : std::runtime_error {
   using std::runtime_error::runtime_error;
 };
